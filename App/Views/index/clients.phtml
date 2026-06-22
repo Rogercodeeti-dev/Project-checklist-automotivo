@@ -1,0 +1,254 @@
+  <div class="">
+    <style>
+      #tbclients td, #tbclients th { vertical-align: middle !important; }
+      #tbclients .badge-fisica { background-color: #3c8dbc; }
+      #tbclients .badge-juridica { background-color: #00a65a; }
+      .field-error { color: #dd4b39; font-size: 12px; margin-top: 3px; display: none; }
+      .has-error .form-control { border-color: #dd4b39; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegClient">
+          <span class="glyphicon glyphicon-plus"></span> Adicionar Cliente
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbclients" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>CPF/CNPJ</th>
+              <th>Nome</th>
+              <th>Razão Social</th>
+              <th>Nome Fantasia</th>
+              <th>Telefone</th>
+              <th>Email</th>
+              <th>Cadastro</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->clients as $client) { ?>
+            <tr>
+              <td>
+                <?php if ($client['tp_person'] === 'PJ') { ?>
+                  <span class="badge badge-juridica">PJ</span>
+                <?php } else { ?>
+                  <span class="badge badge-fisica">PF</span>
+                <?php } ?>
+              </td>
+              <td><?= htmlspecialchars($client['tp_person'] === 'PJ' ? ($client['nr_cnpj'] ?? '') : ($client['nr_cpf'] ?? '')) ?></td>
+              <td><?= htmlspecialchars($client['nm_client']) ?></td>
+              <td><?= htmlspecialchars($client['nm_socialreazon'] ?? '') ?></td>
+              <td><?= htmlspecialchars($client['nm_fantasy'] ?? '') ?></td>
+              <td><?= htmlspecialchars($client['nr_phone'] ?? '') ?></td>
+              <td><?= htmlspecialchars($client['ds_email'] ?? '') ?></td>
+              <td><?= !empty($client['dt_register']) ? htmlspecialchars(date('d/m/Y', strtotime($client['dt_register']))) : '' ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-client" data-id="<?= (int)$client['id_client'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-client" data-id="<?= (int)$client['id_client'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script src="/js/clients.js"></script>
+
+  <!-- ==================== MODAL CADASTRO ==================== -->
+  <div class="modal fade" id="modalRegClient" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Cliente</h4></div>
+        <div class="modal-body">
+          <div id="clientCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formClient" action="/save_client" method="post">
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label>Tipo de Pessoa</label><br>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PF" checked> Pessoa Física
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PJ"> Pessoa Jurídica
+                </label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group" id="field-cpf">
+                <label>CPF</label>
+                <input type="text" id="nr_cpf" name="nr_cpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+              </div>
+              <div class="col-sm-4 form-group" id="field-cnpj" style="display:none;">
+                <label>CNPJ</label>
+                <input type="text" id="nr_cnpj" name="nr_cnpj" class="form-control" placeholder="00.000.000/0000-00" maxlength="18">
+              </div>
+              <div class="col-sm-8 form-group">
+                <label>Nome do Cliente</label>
+                <input type="text" name="nm_client" class="form-control" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label>Razão Social</label>
+                <input type="text" name="nm_socialreazon" class="form-control" disabled>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Nome Fantasia</label>
+                <input type="text" name="nm_fantasy" class="form-control" disabled>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2 form-group">
+                <label>Celular</label>
+                <input type="text" id="nr_cellphone" name="nr_cellphone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Telefone</label>
+                <input type="text" id="nr_phone" name="nr_phone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-8 form-group">
+                <label>Email</label>
+                <input type="email" name="ds_email" class="form-control">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-3 form-group">
+                <label>CEP</label>
+                <input type="text" id="nr_zipcode" name="nr_zipcode" class="form-control" placeholder="00000-000" maxlength="9">
+              </div>
+              <div class="col-sm-7 form-group">
+                <label>Rua</label>
+                <input type="text" id="ds_street" class="form-control" disabled>
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Número</label>
+                <input type="text" id="nr_address" class="form-control">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Bairro</label>
+                <input type="text" id="ds_neighborhood" class="form-control" disabled>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Cidade</label>
+                <input type="text" id="nm_city" class="form-control" disabled>
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Estado</label>
+                <input type="text" id="sg_state" class="form-control" maxlength="2" disabled>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveClient" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL EXCLUSÃO ==================== -->
+  <div class="modal fade" id="modalExcluirClient" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este cliente?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteClientBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL EDIÇÃO ==================== -->
+  <div class="modal fade" id="modalEditClient" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Cliente</h4></div>
+        <div class="modal-body">
+          <div id="clientEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditClient" action="/update_client" method="post">
+            <input type="hidden" id="edit_client_id" name="id" value="">
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label>Tipo de Pessoa</label><br>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PF" checked> Pessoa Física
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PJ"> Pessoa Jurídica
+                </label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group" id="edit-field-cpf">
+                <label>CPF</label>
+                <input type="text" id="edit_nr_cpf" name="nr_cpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+              </div>
+              <div class="col-sm-4 form-group" id="edit-field-cnpj" style="display:none;">
+                <label>CNPJ</label>
+                <input type="text" id="edit_nr_cnpj" name="nr_cnpj" class="form-control" placeholder="00.000.000/0000-00" maxlength="18">
+              </div>
+              <div class="col-sm-8 form-group">
+                <label>Nome do Cliente</label>
+                <input type="text" id="edit_nm_client" name="nm_client" class="form-control" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label>Razão Social</label>
+                <input type="text" id="edit_nm_socialreazon" name="nm_socialreazon" class="form-control" disabled>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Nome Fantasia</label>
+                <input type="text" id="edit_nm_fantasy" name="nm_fantasy" class="form-control" disabled>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2 form-group">
+                <label>Celular</label>
+                <input type="text" id="edit_nr_cellphone" name="nr_cellphone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Telefone</label>
+                <input type="text" id="edit_nr_phone" name="nr_phone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-8 form-group">
+                <label>Email</label>
+                <input type="email" id="edit_ds_email" name="ds_email" class="form-control">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-3 form-group">
+                <label>CEP</label>
+                <input type="text" id="edit_nr_zipcode" name="nr_zipcode" class="form-control" placeholder="00000-000" maxlength="9">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateClient" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

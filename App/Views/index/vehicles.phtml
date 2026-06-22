@@ -1,0 +1,602 @@
+  <div class="">
+    <style>
+      #tbvehicles td, #tbvehicles th { vertical-align: middle !important; }
+      .btn-add-inline { margin-top: 0; padding: 6px 10px; }
+      .input-group-btn .btn-add-inline { border-left: none; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegVehicle">
+          <span class="glyphicon glyphicon-plus"></span> Adicionar Veículo
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbvehicles" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Chassi</th>
+              <th>Cliente</th>
+              <th>Modelo</th>
+              <th>Marca</th>
+              <th>Tipo</th>
+              <th>Cor</th>
+              <th>Combustível</th>
+              <th>KM</th>
+              <th>Cadastro</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->vehicles as $v) { ?>
+            <tr>
+              <td><?= htmlspecialchars($v['nr_platevehicle'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['nr_chassis'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['nm_client'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['ds_model'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['mark_name'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['ds_type'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['ds_color'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['ds_fuel'] ?? '') ?></td>
+              <td><?= htmlspecialchars($v['nr_currentkm'] ?? '0') ?></td>
+              <td><?= !empty($v['dt_register']) ? htmlspecialchars(date('d/m/Y', strtotime($v['dt_register']))) : '' ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-vehicle" data-id="<?= (int)$v['id_vehicle'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-vehicle" data-id="<?= (int)$v['id_vehicle'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(function(){
+      var dtConfig = { language: { url: '/plugins/datatables/Portuguese.json' } };
+      $('#tbvehicles').DataTable(dtConfig);
+
+      function showToast(message, type) {
+        toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
+        if (type === 'success') { toastr.success(message); }
+        else { toastr.error(message); }
+      }
+
+      function refreshVehiclesTable(callback) {
+        $.post('/listvehicle', function(html){
+          var tbody = $(html).find('#tbvehicles tbody');
+          var table = $('#tbvehicles').DataTable();
+          table.destroy();
+          $('#tbvehicles tbody').html(tbody.html());
+          $('#tbvehicles').DataTable(dtConfig);
+          if (typeof callback === 'function') callback();
+        });
+      }
+
+      function populateSelect($select, data, valueField, labelFields, selectedVal) {
+        $select.find('option:gt(0)').remove();
+        $.each(data, function(i, item) {
+          var label = [];
+          for (var j = 0; j < labelFields.length; j++) {
+            if (item[labelFields[j]]) label.push(item[labelFields[j]]);
+          }
+          var opt = $('<option>').val(item[valueField]).text(label.join(' - '));
+          if (selectedVal && String(item[valueField]) === String(selectedVal)) opt.attr('selected', true);
+          $select.append(opt);
+        });
+      }
+
+      // ===================== MODAL CADASTRO: abrir e limpar =====================
+
+      $('#modalRegVehicle').on('show.bs.modal', function(){
+        $('#formVehicle')[0].reset();
+        $('#formVehicle select').val('');
+      });
+
+      // ===================== BOTÃO + MODELO (CADASTRO) =====================
+
+      $('#btnAddModelFromVehicle').on('click', function(){
+        $('#quickModelAlert').hide();
+        $('#formQuickModel')[0].reset();
+        $('#formQuickModel select[name="id_mark"]').val('');
+        $('#modalQuickModel').modal('show');
+      });
+
+      $('#btnSaveQuickModel').on('click', function(){
+        var form = $('#formQuickModel');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalQuickModel').modal('hide');
+            var newId = res.id;
+            // Recarregar select de modelos
+            $.getJSON('/get_all_models', function(models){
+              populateSelect($('#vehicle_id_model'), models, 'id', ['ds_model', 'mark_name'], newId);
+            });
+            showToast('Modelo cadastrado com sucesso.', 'success');
+          } else {
+            $('#quickModelAlert').removeClass('alert-success').addClass('alert-danger').text(res.message || 'Erro ao salvar modelo').show();
+          }
+        }).fail(function(){ $('#quickModelAlert').removeClass('alert-success').addClass('alert-danger').text('Erro ao salvar modelo').show(); });
+      });
+
+      // ===================== BOTÃO + CLIENTE (CADASTRO) =====================
+
+      $('#btnAddClientFromVehicle').on('click', function(){
+        $('#quickClientAlert').hide();
+        $('#formQuickClient')[0].reset();
+        $('#formQuickClient input[name="tp_person"][value="PF"]').prop('checked', true).trigger('change');
+        $('#modalQuickClient').modal('show');
+      });
+
+      $('#btnSaveQuickClient').on('click', function(){
+        var form = $('#formQuickClient');
+        // Habilitar campos desabilitados antes de enviar
+        form.find('input[name="nm_socialreazon"]').prop('disabled', false);
+        form.find('input[name="nm_fantasy"]').prop('disabled', false);
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalQuickClient').modal('hide');
+            // Recarregar select de clientes
+            $.getJSON('/get_all_clients', function(clients){
+              populateSelect($('#vehicle_id_client'), clients, 'id_client', ['nm_client'], null);
+            });
+            showToast(res.message || 'Cliente cadastrado com sucesso.', 'success');
+          } else {
+            $('#quickClientAlert').removeClass('alert-success').addClass('alert-danger').text(res.message || 'Erro ao salvar cliente').show();
+          }
+        }).fail(function(){ $('#quickClientAlert').removeClass('alert-success').addClass('alert-danger').text('Erro ao salvar cliente').show(); });
+      });
+
+      // Toggle PF/PJ no modal rápido de cliente
+      $('#formQuickClient input[name="tp_person"]').on('change', function(){
+        if ($(this).val() === 'PJ') {
+          $('#quick-field-cpf').hide();
+          $('#quick-field-cnpj').show();
+          $('#formQuickClient input[name="nm_socialreazon"]').prop('disabled', false);
+          $('#formQuickClient input[name="nm_fantasy"]').prop('disabled', false);
+        } else {
+          $('#quick-field-cpf').show();
+          $('#quick-field-cnpj').hide();
+          $('#formQuickClient input[name="nm_socialreazon"]').prop('disabled', true).val('');
+          $('#formQuickClient input[name="nm_fantasy"]').prop('disabled', true).val('');
+        }
+      });
+
+      // ===================== BOTÃO + MODELO (EDIÇÃO) =====================
+
+      $('#btnAddModelFromVehicleEdit').on('click', function(){
+        $('#quickModelAlert').hide();
+        $('#formQuickModel')[0].reset();
+        $('#formQuickModel select[name="id_mark"]').val('');
+        $('#modalQuickModel').modal('show');
+      });
+
+      // ===================== BOTÃO + CLIENTE (EDIÇÃO) =====================
+
+      $('#btnAddClientFromVehicleEdit').on('click', function(){
+        $('#quickClientAlert').hide();
+        $('#formQuickClient')[0].reset();
+        $('#formQuickClient input[name="tp_person"][value="PF"]').prop('checked', true).trigger('change');
+        $('#modalQuickClient').modal('show');
+      });
+
+      // ===================== SALVAR VEÍCULO =====================
+
+      $('#btnSaveVehicle').on('click', function(){
+        var form = $('#formVehicle');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalRegVehicle').modal('hide');
+            form[0].reset();
+            showToast(res.message || 'Veículo cadastrado com sucesso.', 'success');
+            refreshVehiclesTable();
+          } else {
+            showToast(res.message || 'Erro ao salvar veículo', 'error');
+          }
+        }).fail(function(xhr){
+          console.error('Erro AJAX save_vehicle:', xhr.responseText || xhr.statusText);
+          showToast('Erro ao salvar veículo', 'error');
+        });
+      });
+
+      // ===================== EDITAR VEÍCULO =====================
+
+      $('#tbvehicles').on('click', '.edit-vehicle', function(){
+        var id = $(this).data('id');
+        $.getJSON('/get_vehicle?id=' + id, function(data){
+          if(!data || !data.id_vehicle) { showToast('Registro não encontrado', 'error'); return; }
+          $('#edit_vehicle_id').val(data.id_vehicle);
+          $('#edit_vehicle_id_client').val(data.id_client);
+          $('#edit_vehicle_id_model').val(data.id_model);
+          $('#edit_vehicle_id_typevehicle').val(data.id_typevehicle);
+          $('#edit_nr_platevehicle').val(data.nr_platevehicle || '');
+          $('#edit_nr_chassis').val(data.nr_chassis || '');
+          $('#edit_ds_color').val(data.ds_color || '');
+          $('#edit_ds_fuel').val(data.ds_fuel || '');
+          $('#edit_nr_currentkm').val(data.nr_currentkm || '0');
+          $('#edit_ds_observation').val(data.ds_observation || '');
+          $('#vehicleEditAlert').hide();
+          $('#modalEditVehicle').modal('show');
+        }).fail(function(){ showToast('Erro ao buscar veículo', 'error'); });
+      });
+
+      // ===================== ATUALIZAR VEÍCULO =====================
+
+      $('#btnUpdateVehicle').on('click', function(){
+        var form = $('#formEditVehicle');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalEditVehicle').modal('hide');
+            showToast(res.message || 'Veículo atualizado com sucesso.', 'success');
+            refreshVehiclesTable();
+          } else { showToast(res.message || 'Erro ao atualizar veículo', 'error'); }
+        }).fail(function(){ showToast('Erro ao atualizar veículo', 'error'); });
+      });
+
+      // ===================== EXCLUIR VEÍCULO =====================
+
+      var deleteVehicleId = null;
+
+      $('#tbvehicles').on('click', '.delete-vehicle', function(){
+        deleteVehicleId = $(this).data('id');
+        $('#modalExcluirVehicle').modal('show');
+      });
+
+      $('#confirmDeleteVehicleBtn').click(function(){
+        if(!deleteVehicleId) return;
+        $.post('/delete_vehicle', { id: deleteVehicleId }, function(res){
+          if(res.success){
+            $('#modalExcluirVehicle').modal('hide');
+            showToast(res.message || 'Veículo excluído com sucesso.', 'success');
+            refreshVehiclesTable();
+          } else {
+            $('#modalExcluirVehicle').modal('hide');
+            showToast(res.message || 'Erro ao excluir', 'error');
+          }
+        }, 'json').fail(function(){
+          $('#modalExcluirVehicle').modal('hide');
+          showToast('Erro na requisição', 'error');
+        });
+      });
+    });
+  </script>
+
+  <!-- ==================== MODAL CADASTRO VEÍCULO ==================== -->
+  <div class="modal fade" id="modalRegVehicle" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Veículo</h4></div>
+        <div class="modal-body">
+          <div id="vehicleCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formVehicle" action="/save_vehicle" method="post">
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Placa do Veículo</label>
+                <input type="text" name="nr_platevehicle" class="form-control" required maxlength="15" placeholder="ABC-1234">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Número do Chassi</label>
+                <input type="text" name="nr_chassis" class="form-control" required maxlength="50">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Cor</label>
+                <input type="text" name="ds_color" class="form-control" maxlength="50">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label>Cliente</label>
+                <div class="input-group">
+                  <select name="id_client" id="vehicle_id_client" class="form-control" required>
+                    <option value="">-- selecione --</option>
+                    <?php foreach (($this->view->clients ?? []) as $c) { ?>
+                      <option value="<?= (int)$c['id_client'] ?>"><?= htmlspecialchars($c['nm_client']) ?></option>
+                    <?php } ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button type="button" id="btnAddClientFromVehicle" class="btn btn-success btn-add-inline" title="Adicionar Cliente"><span class="glyphicon glyphicon-plus"></span></button>
+                  </span>
+                </div>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Modelo</label>
+                <div class="input-group">
+                  <select name="id_model" id="vehicle_id_model" class="form-control" required>
+                    <option value="">-- selecione --</option>
+                    <?php foreach (($this->view->models ?? []) as $m) { ?>
+                      <option value="<?= (int)$m['id'] ?>"><?= htmlspecialchars(($m['ds_model'] ?? '') . (isset($m['mark_name']) && $m['mark_name'] ? ' - ' . $m['mark_name'] : '')) ?></option>
+                    <?php } ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button type="button" id="btnAddModelFromVehicle" class="btn btn-success btn-add-inline" title="Adicionar Modelo"><span class="glyphicon glyphicon-plus"></span></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Tipo de Veículo</label>
+                <select name="id_typevehicle" class="form-control" required>
+                  <option value="">-- selecione --</option>
+                  <?php foreach (($this->view->typevehicles ?? []) as $tv) { ?>
+                    <option value="<?= (int)$tv['id'] ?>"><?= htmlspecialchars($tv['ds_type']) ?></option>
+                  <?php } ?>
+                </select>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Combustível</label>
+                <select name="ds_fuel" class="form-control">
+                  <option value="">-- selecione --</option>
+                  <option value="Gasolina">Gasolina</option>
+                  <option value="Etanol">Etanol</option>
+                  <option value="Flex">Flex</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Elétrico">Elétrico</option>
+                  <option value="Híbrido">Híbrido</option>
+                  <option value="GNV">GNV</option>
+                </select>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>KM Atual</label>
+                <input type="number" name="nr_currentkm" class="form-control" value="0" min="0">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label>Observação</label>
+                <textarea name="ds_observation" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveVehicle" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL EXCLUSÃO VEÍCULO ==================== -->
+  <div class="modal fade" id="modalExcluirVehicle" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este veículo?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteVehicleBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL EDIÇÃO VEÍCULO ==================== -->
+  <div class="modal fade" id="modalEditVehicle" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Veículo</h4></div>
+        <div class="modal-body">
+          <div id="vehicleEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditVehicle" action="/update_vehicle" method="post">
+            <input type="hidden" id="edit_vehicle_id" name="id" value="">
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Placa do Veículo</label>
+                <input type="text" id="edit_nr_platevehicle" name="nr_platevehicle" class="form-control" required maxlength="15">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Número do Chassi</label>
+                <input type="text" id="edit_nr_chassis" name="nr_chassis" class="form-control" required maxlength="50">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Cor</label>
+                <input type="text" id="edit_ds_color" name="ds_color" class="form-control" maxlength="50">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label>Cliente</label>
+                <div class="input-group">
+                  <select name="id_client" id="edit_vehicle_id_client" class="form-control" required>
+                    <option value="">-- selecione --</option>
+                    <?php foreach (($this->view->clients ?? []) as $c) { ?>
+                      <option value="<?= (int)$c['id_client'] ?>"><?= htmlspecialchars($c['nm_client']) ?></option>
+                    <?php } ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button type="button" id="btnAddClientFromVehicleEdit" class="btn btn-success btn-add-inline" title="Adicionar Cliente"><span class="glyphicon glyphicon-plus"></span></button>
+                  </span>
+                </div>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Modelo</label>
+                <div class="input-group">
+                  <select name="id_model" id="edit_vehicle_id_model" class="form-control" required>
+                    <option value="">-- selecione --</option>
+                    <?php foreach (($this->view->models ?? []) as $m) { ?>
+                      <option value="<?= (int)$m['id'] ?>"><?= htmlspecialchars(($m['ds_model'] ?? '') . (isset($m['mark_name']) && $m['mark_name'] ? ' - ' . $m['mark_name'] : '')) ?></option>
+                    <?php } ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button type="button" id="btnAddModelFromVehicleEdit" class="btn btn-success btn-add-inline" title="Adicionar Modelo"><span class="glyphicon glyphicon-plus"></span></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Tipo de Veículo</label>
+                <select name="id_typevehicle" id="edit_vehicle_id_typevehicle" class="form-control" required>
+                  <option value="">-- selecione --</option>
+                  <?php foreach (($this->view->typevehicles ?? []) as $tv) { ?>
+                    <option value="<?= (int)$tv['id'] ?>"><?= htmlspecialchars($tv['ds_type']) ?></option>
+                  <?php } ?>
+                </select>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Combustível</label>
+                <select name="ds_fuel" id="edit_ds_fuel" class="form-control">
+                  <option value="">-- selecione --</option>
+                  <option value="Gasolina">Gasolina</option>
+                  <option value="Etanol">Etanol</option>
+                  <option value="Flex">Flex</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Elétrico">Elétrico</option>
+                  <option value="Híbrido">Híbrido</option>
+                  <option value="GNV">GNV</option>
+                </select>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>KM Atual</label>
+                <input type="number" id="edit_nr_currentkm" name="nr_currentkm" class="form-control" min="0">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label>Observação</label>
+                <textarea id="edit_ds_observation" name="ds_observation" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateVehicle" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL RÁPIDO: ADICIONAR MODELO ==================== -->
+  <div class="modal fade" id="modalQuickModel" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Modelo</h4></div>
+        <div class="modal-body">
+          <div id="quickModelAlert" class="alert" style="display:none;"></div>
+          <form id="formQuickModel" action="/save_model" method="post">
+            <div class="form-group">
+              <label>Marca</label>
+              <select name="id_mark" class="form-control" required>
+                <option value="">-- selecione --</option>
+                <?php foreach (($this->view->marks ?? []) as $mk) { ?>
+                  <option value="<?= (int)$mk['id'] ?>"><?= htmlspecialchars($mk['nm_name']) ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modelo</label>
+              <input type="text" name="ds_model" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select name="type_model" class="form-control">
+                <option value="carro">carro</option>
+                <option value="moto">moto</option>
+                <option value="caminhao">caminhão</option>
+                <option value="trator">trator</option>
+                <option value="outro">outro</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveQuickModel" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL RÁPIDO: ADICIONAR CLIENTE ==================== -->
+  <div class="modal fade" id="modalQuickClient" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Cliente</h4></div>
+        <div class="modal-body">
+          <div id="quickClientAlert" class="alert" style="display:none;"></div>
+          <form id="formQuickClient" action="/save_client" method="post">
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label>Tipo de Pessoa</label><br>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PF" checked> Pessoa Física
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="tp_person" value="PJ"> Pessoa Jurídica
+                </label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group" id="quick-field-cpf">
+                <label>CPF</label>
+                <input type="text" name="nr_cpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+              </div>
+              <div class="col-sm-4 form-group" id="quick-field-cnpj" style="display:none;">
+                <label>CNPJ</label>
+                <input type="text" name="nr_cnpj" class="form-control" placeholder="00.000.000/0000-00" maxlength="18">
+              </div>
+              <div class="col-sm-8 form-group">
+                <label>Nome do Cliente</label>
+                <input type="text" name="nm_client" class="form-control" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label>Razão Social</label>
+                <input type="text" name="nm_socialreazon" class="form-control" disabled>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Nome Fantasia</label>
+                <input type="text" name="nm_fantasy" class="form-control" disabled>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Celular</label>
+                <input type="text" name="nr_cellphone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Telefone</label>
+                <input type="text" name="nr_phone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label>Email</label>
+                <input type="email" name="ds_email" class="form-control">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>CEP</label>
+                <input type="text" name="nr_zipcode" class="form-control" placeholder="00000-000" maxlength="9">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveQuickClient" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

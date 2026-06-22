@@ -1,0 +1,176 @@
+body,
+html {
+  background-color: #dee2e6;
+  height: 100%;
+  font-family: Montserrat-Regular, sans-serif;
+  box-sizing: border-box;  
+}
+
+
+.bg-login {
+  /*background-image: url(../img/login/img-login.jpg);*/
+  background-size: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;  
+}
+
+
+.window-login {
+  width: 460px;  
+  margin: 0 auto;
+  margin-top: 30vh;
+  background-color: white;
+  box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);  
+  
+}
+
+.inputWithIcon input[type="text"] {
+  padding-left: 40px;
+  border-radius: 7px;
+}
+
+.inputWithIcon input[type="password"] {
+  padding-left: 40px;
+  border-radius: 7px;
+}
+
+.inputWithIcon i {
+  position: absolute;
+  left: 11;
+  top: 2px;
+  padding: 9px 8px;
+  color: #aaa;
+  transition: 0.3s;
+  margin-left: 5px;
+}
+
+#btn {
+  margin-left: 20px;
+  position: relative;
+  top: -5px;
+  bottom: 2px;
+}
+
+#img-icone {
+  margin-top: 1vh;
+  height: 3vh;
+  margin-left: 10px;
+}
+
+.title-color {
+  background-color: cadetblue;
+  color:white;
+  font-size: 18px;
+}
+
+/*formatação do select - campo empresa*/
+.selectCompany{
+   /*border:1px solid red;*/
+   width:28.5vw;
+   margin-left:15px;
+   border-radius: 8px;
+   cursor:pointer;
+}
+
+/*Fim da formatação do select - campo empresa*/
+
+/*Formatação dos breakpoints*/
+@media (min-width:575.98px) and (max-width:767px) {
+
+  .inputWithIcon {
+    margin-left: 2px;
+    margin-right: 15px;
+    width:98%;
+  }
+
+  .selectCompany{
+    width:95%;
+  }
+
+  .title-color{
+    width:100%;
+  }
+
+  main {
+    width: 89%;
+    margin-top: 10vh;
+    margin-bottom: 50%;
+  }
+
+  #title {
+    height: 7vh
+  }
+
+  img {
+    margin-top: 3vh;
+    height: 4vh;
+  }
+
+  #btn {
+    margin-left: 18px;
+  }
+}
+
+@media (min-width:768px) and (max-width:991.98px) {
+  .selectCompany{
+    width:87%;
+    border: 1px solid green;
+  }
+
+  .inputWithIcon {  
+    margin-left: 3px;    
+    width:92%;
+  }
+
+  .logo{
+    width:140px;
+    height: 120px;
+  }
+  /*#autenticacao{
+    background-color: beige;
+    text-align: center;
+  }*/
+
+  #title-authenticate{
+    display: flex;    
+    background-color: rgb(242, 242, 242);    
+  }
+
+  #text-authenticate{
+    line-height: 55%;
+    margin-left: 60px;
+    position:relative;
+    top:50px;
+  }
+
+
+}
+
+ @media (min-width:992px) and (max-width:1200px) {
+
+    .selectCompany{
+      width:95%;
+      border: 1px solid blue;  
+    }
+
+    .inputWithIcon {  
+      margin-left: 2px;    
+      width:97%;
+    }
+
+}
+
+@media (min-width:1200px)  {
+
+  .selectCompany{
+    width:94%;
+
+  }
+
+}
+
+
+
+
+

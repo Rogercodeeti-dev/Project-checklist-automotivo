@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Agent(Explore)",
+      "Read(//c/projetos/appchecklist-car/App/Controllers/**)",
+      "Read(//c/projetos/appchecklist-car/**)",
+      "Bash(dir)"
+    ]
+  },
+  "$version": 4
+}

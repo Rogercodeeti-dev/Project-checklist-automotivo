@@ -1,0 +1,659 @@
+<?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+$userPhoto = '/dist/img/sem-foto.jpg';
+$userProfile = null;
+if (!empty($_SESSION['id'])) {
+    $userModel = \MF\Model\Container::getModel('User');
+    $userModel->__set('id', $_SESSION['id']);
+    $userProfile = $userModel->getById();
+    if (!empty($userProfile['ds_photo'])) {
+        $userPhoto = $userProfile['ds_photo'];
+    }
+}
+
+$settingsModel = new \App\Models\Setting();
+$systemSettings = $settingsModel->getSettings();
+
+function settingImagePath($value) {
+    if (empty($value)) {
+        return '/dist/img/sem-foto.jpg';
+    }
+    if (strpos($value, '/') === 0) {
+        return $value;
+    }
+    return '/dist/img/logo/' . $value;
+}
+?>
+<div class="wrapper">
+
+  <!-- Main Header -->
+  <header class="main-header">
+
+    <!-- Logo -->
+    <a href="index2.html" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b><?= htmlspecialchars(substr($systemSettings['nm_systemname'] ?? 'A', 0, 1)) ?></b></span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><?= htmlspecialchars($systemSettings['nm_systemname'] ?? 'AppChecklist') ?></span>
+    </a>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <!-- Messages: style can be found in dropdown.less-->
+          <li class="dropdown messages-menu">
+            <!-- Menu toggle button -->
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-envelope-o"></i>
+              <span class="label label-success">4</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="header">You have 4 messages</li>
+              <li>
+                <!-- inner menu: contains the messages -->
+                <ul class="menu">
+                  <li><!-- start message -->
+                    <a href="#">
+                      <div class="pull-left">
+                        <!-- User Image -->
+                        <img src="/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                      </div>
+                      <!-- Message title and timestamp -->
+                      <h4>
+                        Support Team
+                        <small><i class="fa fa-clock-o"></i> 5 mins</small>
+                      </h4>
+                      <!-- The message -->
+                      <p>Why not buy a new awesome theme?</p>
+                    </a>
+                  </li>
+                  <!-- end message -->
+                </ul>
+                <!-- /.menu -->
+              </li>
+              <li class="footer"><a href="#">See All Messages</a></li>
+            </ul>
+          </li>
+          <!-- /.messages-menu -->
+
+          <!-- Notifications Menu -->
+          <li class="dropdown notifications-menu">
+            <!-- Menu toggle button -->
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-bell-o"></i>
+              <span class="label label-warning">10</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="header">You have 10 notifications</li>
+              <li>
+                <!-- Inner Menu: contains the notifications -->
+                <ul class="menu">
+                  <li><!-- start notification -->
+                    <a href="#">
+                      <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                    </a>
+                  </li>
+                  <!-- end notification -->
+                </ul>
+              </li>
+              <li class="footer"><a href="#">View all</a></li>
+            </ul>
+          </li>
+          <!-- Tasks Menu -->
+          <li class="dropdown tasks-menu">
+            <!-- Menu Toggle Button -->
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-flag-o"></i>
+              <span class="label label-danger">9</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="header">You have 9 tasks</li>
+              <li>
+                <!-- Inner menu: contains the tasks -->
+                <ul class="menu">
+                  <li><!-- Task item -->
+                    <a href="#">
+                      <!-- Task title and progress text -->
+                      <h3>
+                        Design some buttons
+                        <small class="pull-right">20%</small>
+                      </h3>
+                      <!-- The progress bar -->
+                      <div class="progress xs">
+                        <!-- Change the css width attribute to simulate progress -->
+                        <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                          <span class="sr-only">20% Complete</span>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <!-- end task item -->
+                </ul>
+              </li>
+              <li class="footer">
+                <a href="#">View all tasks</a>
+              </li>
+            </ul>
+          </li>
+          <!-- User Account Menu -->
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <img src="<?= $userPhoto ?>" class="user-image" alt="User Image">
+              <span class="hidden-xs"><?= htmlspecialchars($_SESSION['nm_login']) ?></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="user-header" style="background: #3c8dbc; color: #fff;">
+                <img src="<?= $userPhoto ?>" class="img-circle" alt="User Image">
+                <p>
+                  <?= htmlspecialchars($userProfile['nm_name'] ?? $_SESSION['nm_login']) ?>
+                  <small><?= htmlspecialchars($userProfile['ds_email'] ?? 'Sem email cadastrado') ?></small>
+                </p>
+              </li>
+              <li class="user-body">
+                <div class="row">
+                      <div class="col-xs-6 text-center" style="padding:0 4px;">
+                    <a href="#" class="btn btn-default btn-flat btn-block" style="margin-bottom:4px;" data-toggle="modal" data-target="#profileModal">Perfil</a>
+                  </div>
+                  <div class="col-xs-6 text-center" style="padding:0 4px;">
+                    <a href="/logout" class="btn btn-default btn-flat btn-block" style="margin-bottom:4px;">Sair</a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- Control Sidebar Toggle Button -->
+          <li>
+            <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel">
+        <div class="pull-left image">
+          <img src="<?= $userPhoto ?>" class="img-circle" alt="User Image">
+        </div>
+        <div class="pull-left info">
+          <p><?= htmlspecialchars($_SESSION['nm_login'] ?? 'Visitante') ?></p>
+          <!-- Status -->
+          <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+        </div>
+      </div>
+
+      <!-- search form (Optional) -->
+      <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search...">
+              <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                </button>
+              </span>
+        </div>
+      </form>
+      <!-- /.search form -->
+
+      <!-- Sidebar Menu -->
+      <ul class="sidebar-menu">
+        <li class="header">MENU</li>
+        <li>
+          <a href="/">
+            <i class="fa fa-home"></i> <span>Home</span>
+          </a>
+        </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-edit"></i> <span>Cadastro</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-left"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="#" id="listmark" data-url="/listmark"><i class="fa fa-tag"></i> Marcas</a></li>
+            <li><a href="#" id="listmodel" data-url="/listmodel"><i class="fa fa-car"></i> Modelos</a></li>
+            <li><a href="#" id="listtypevehicle" data-url="/listtypevehicle"><i class="fa fa-truck"></i> Tipo de Veículo</a></li>
+            <li><a href="#" id="listvehicle" data-url="/listvehicle"><i class="fa fa-car"></i> Veículos</a></li>
+            <li><a href="#" id="listclient" data-url="/listclient"><i class="fa fa-users"></i> Clientes</a></li>
+          </ul>
+        </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-cogs"></i> <span>Administração</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-left"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="#" id="listuser" data-url="/listuser"><i class="fa fa-user"></i> Usuários</a></li>
+            <li><a href="#" data-toggle="modal" data-target="#configModal"><i class="fa fa-wrench"></i> Configurações</a></li>
+          </ul>
+        </li>
+      </ul>
+      <!-- /.sidebar-menu -->
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    
+    <!-- Main content -->
+      <section id="ajax-content" class="content">
+       
+      <?php if(isset($_SESSION['idcurso']))
+         echo 'idcurso '.$_SESSION['idcurso'];?>
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Modals for user profile and system settings -->
+  <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <form id="profileForm" action="/update_profile" method="post" enctype="multipart/form-data">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="profileModalLabel">Perfil do Usuário</h4>
+          </div>
+          <div class="modal-body">
+            <div id="profileAlert" class="alert" style="display:none;"></div>
+            <div class="text-center">
+              <img id="profilePhotoPreview" src="<?= $userPhoto ?>" class="img-circle" style="width:120px; height:120px; object-fit:cover; border:1px solid #ddd; padding:6px;" alt="Foto do usuário">
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+              <label for="profile_nm_name">Nome</label>
+              <input type="text" name="nm_name" id="profile_nm_name" class="form-control" value="<?= htmlspecialchars($userProfile['nm_name'] ?? $_SESSION['nm_login']) ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="profile_nm_login">Login</label>
+              <input type="text" name="nm_login" id="profile_nm_login" class="form-control" value="<?= htmlspecialchars($userProfile['nm_login'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="profile_ds_email">Email</label>
+              <input type="email" name="ds_email" id="profile_ds_email" class="form-control" value="<?= htmlspecialchars($userProfile['ds_email'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="profile_nr_phone">Telefone</label>
+              <input type="text" name="nr_phone" id="profile_nr_phone" class="form-control" value="<?= htmlspecialchars($userProfile['nr_phone'] ?? '') ?>">
+            </div>
+            <div class="form-group">
+              <label for="profile_ds_photo">Foto do Perfil</label>
+              <input type="file" name="ds_photo" id="profile_ds_photo" class="form-control">
+              <p class="help-block">Envie uma nova foto para o seu perfil.</p>
+            </div>
+            <input type="hidden" name="id" value="<?= htmlspecialchars($userProfile['id'] ?? $_SESSION['id']) ?>">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            <button type="submit" class="btn btn-primary">Salvar perfil</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="configModal" tabindex="-1" role="dialog" aria-labelledby="configModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <form id="settingsForm" action="/update_settings" method="post" enctype="multipart/form-data">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="configModalLabel">Configurações do Sistema</h4>
+          </div>
+          <div class="modal-body">
+            <div id="settingsAlert" class="alert" style="display:none;"></div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label for="nm_systemname">Nome do Sistema</label>
+                <input type="text" name="nm_systemname" id="nm_systemname" class="form-control" value="<?= htmlspecialchars($systemSettings['nm_systemname'] ?? '') ?>" required>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="nm_socialreazon">Razão Social</label>
+                <input type="text" name="nm_socialreazon" id="nm_socialreazon" class="form-control" value="<?= htmlspecialchars($systemSettings['nm_socialreazon'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label for="nm_fantasyname">Nome Fantasia</label>
+                <input type="text" name="nm_fantasyname" id="nm_fantasyname" class="form-control" value="<?= htmlspecialchars($systemSettings['nm_fantasyname'] ?? '') ?>">
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="ds_email">Email de Contato</label>
+                <input type="email" name="ds_email" id="ds_email" class="form-control" value="<?= htmlspecialchars($systemSettings['ds_email'] ?? '') ?>" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="nr_cnpj">CNPJ</label>
+                <input type="text" name="nr_cnpj" id="nr_cnpj" class="form-control" value="<?= htmlspecialchars($systemSettings['nr_cnpj'] ?? '') ?>">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="nr_zipcode">CEP</label>
+                <input type="text" name="nr_zipcode" id="nr_zipcode" class="form-control" value="<?= htmlspecialchars($systemSettings['nr_zipcode'] ?? '') ?>">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="nr_phone">Telefone</label>
+                <input type="text" name="nr_phone" id="nr_phone" class="form-control" value="<?= htmlspecialchars($systemSettings['nr_phone'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-8 form-group">
+                <label for="ds_street">Rua</label>
+                <input type="text" id="ds_street" class="form-control" readonly value="<?= htmlspecialchars($systemSettings['ds_street'] ?? '') ?>">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="nm_city">Cidade</label>
+                <input type="text" id="nm_city" class="form-control" readonly value="<?= htmlspecialchars($systemSettings['nm_city'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label for="ds_neighborhood">Bairro</label>
+                <input type="text" id="ds_neighborhood" class="form-control" readonly value="<?= htmlspecialchars($systemSettings['ds_neighborhood'] ?? '') ?>">
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="sg_state">Estado</label>
+                <input type="text" id="sg_state" class="form-control" readonly value="<?= htmlspecialchars($systemSettings['sg_state'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <label for="ds_url">Website</label>
+                <input type="text" name="ds_url" id="ds_url" class="form-control" value="<?= htmlspecialchars($systemSettings['ds_url'] ?? '') ?>">
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="ds_instagram">Instagram</label>
+                <input type="text" name="ds_instagram" id="ds_instagram" class="form-control" value="<?= htmlspecialchars($systemSettings['ds_instagram'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="ds_system_logo_file">Logo do Sistema</label>
+                <img id="logoPreview" src="<?= htmlspecialchars(settingImagePath($systemSettings['ds_system_logo'] ?? '')) ?>" class="img-responsive" style="margin-bottom:10px; max-height:120px;" alt="Logo do sistema">
+                <input type="file" name="ds_system_logo_file" id="ds_system_logo_file" class="form-control">
+                <input type="hidden" name="ds_system_logo" id="ds_system_logo" value="<?= htmlspecialchars($systemSettings['ds_system_logo'] ?? '') ?>">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="ds_reporticon_file">Ícone de Relatório</label>
+                <img id="reportIconPreview" src="<?= htmlspecialchars(settingImagePath($systemSettings['ds_reporticon'] ?? '')) ?>" class="img-responsive" style="margin-bottom:10px; max-height:120px;" alt="Ícone relatório">
+                <input type="file" name="ds_reporticon_file" id="ds_reporticon_file" class="form-control">
+                <input type="hidden" name="ds_reporticon" id="ds_reporticon" value="<?= htmlspecialchars($systemSettings['ds_reporticon'] ?? '') ?>">
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="ds_icon_file">Ícone do Sistema</label>
+                <img id="systemIconPreview" src="<?= htmlspecialchars(settingImagePath($systemSettings['ds_icon'] ?? '')) ?>" class="img-responsive" style="margin-bottom:10px; max-height:120px;" alt="Ícone sistema">
+                <input type="file" name="ds_icon_file" id="ds_icon_file" class="form-control">
+                <input type="hidden" name="ds_icon" id="ds_icon" value="<?= htmlspecialchars($systemSettings['ds_icon'] ?? '') ?>">
+              </div>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ds_active" id="ds_active" value="1" <?= isset($systemSettings['ds_active']) && $systemSettings['ds_active'] == '1' ? 'checked' : '' ?>> Sistema ativo
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    jQuery(function($) {
+      function showMessage(element, type, message) {
+        element.removeClass('alert-success alert-danger').addClass(type === 'success' ? 'alert-success' : 'alert-danger');
+        element.text(message).show();
+      }
+
+      function renderPreview(input, previewSelector) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            $(previewSelector).attr('src', e.target.result);
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      $('#profile_ds_photo, #ds_system_logo_file, #ds_reporticon_file, #ds_icon_file').on('change', function() {
+        var previewMap = {
+          'profile_ds_photo': '#profilePhotoPreview',
+          'ds_system_logo_file': '#logoPreview',
+          'ds_reporticon_file': '#reportIconPreview',
+          'ds_icon_file': '#systemIconPreview'
+        };
+        renderPreview(this, previewMap[this.id]);
+      });
+
+      $('#profileForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+          url: $(this).attr('action'),
+          type: 'POST',
+          data: form,
+          processData: false,
+          contentType: false,
+          dataType: 'json'
+        }).done(function(response) {
+          if (response.success) {
+            showMessage($('#profileAlert'), 'success', response.message || 'Perfil atualizado com sucesso.');
+            if (response.user && response.user.ds_photo) {
+              $('#profilePhotoPreview, .user-image, .user-header img').attr('src', response.user.ds_photo);
+            }
+          } else {
+            showMessage($('#profileAlert'), 'error', response.message || 'Não foi possível atualizar o perfil.');
+          }
+        }).fail(function() {
+          showMessage($('#profileAlert'), 'error', 'Erro de comunicação com o servidor.');
+        });
+      });
+
+      $('#settingsForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+          url: $(this).attr('action'),
+          type: 'POST',
+          data: form,
+          processData: false,
+          contentType: false,
+          dataType: 'json'
+        }).done(function(response) {
+          if (response.success) {
+            showMessage($('#settingsAlert'), 'success', response.message || 'Configurações salvas.');
+            if (response.settings) {
+              if (response.settings.ds_system_logo) {
+                $('#logoPreview').attr('src', response.settings.ds_system_logo);
+                $('#ds_system_logo').val(response.settings.ds_system_logo);
+              }
+              if (response.settings.ds_reporticon) {
+                $('#reportIconPreview').attr('src', response.settings.ds_reporticon);
+                $('#ds_reporticon').val(response.settings.ds_reporticon);
+              }
+              if (response.settings.ds_icon) {
+                $('#systemIconPreview').attr('src', response.settings.ds_icon);
+                $('#ds_icon').val(response.settings.ds_icon);
+              }
+            }
+          } else {
+            showMessage($('#settingsAlert'), 'error', response.message || 'Não foi possível salvar as configurações.');
+          }
+        }).fail(function() {
+          showMessage($('#settingsAlert'), 'error', 'Erro de comunicação com o servidor.');
+        });
+      });
+
+      // Limpa alertas ao fechar os modais
+      $('#profileModal, #configModal').on('hidden.bs.modal', function() {
+        $(this).find('.alert').hide();
+      });
+
+      // Busca endereço via VIACEP quando CEP for informado
+      function clearAddressFields() {
+        $('#ds_street').val('');
+        $('#ds_neighborhood').val('');
+        $('#nm_city').val('');
+        $('#sg_state').val('');
+      }
+
+      function fetchAddressByCep(cep) {
+        var cepDigits = (cep || '').replace(/\D/g, '');
+        if (!cepDigits) {
+          clearAddressFields();
+          return;
+        }
+        if (cepDigits.length !== 8) {
+          showMessage($('#settingsAlert'), 'error', 'CEP inválido. Informe 8 dígitos.');
+          clearAddressFields();
+          return;
+        }
+
+        // Consulta via VIACEP
+        $.ajax({
+          url: 'https://viacep.com.br/ws/' + cepDigits + '/json/',
+          method: 'GET',
+          dataType: 'json',
+          timeout: 10000
+        }).done(function(data) {
+          if (!data || data.erro) {
+            showMessage($('#settingsAlert'), 'error', 'CEP não encontrado.');
+            clearAddressFields();
+            return;
+          }
+          $('#ds_street').val(data.logradouro || '');
+          $('#ds_neighborhood').val(data.bairro || '');
+          $('#nm_city').val(data.localidade || '');
+          $('#sg_state').val(data.uf || '');
+          $('#settingsAlert').hide();
+        }).fail(function() {
+          showMessage($('#settingsAlert'), 'error', 'Erro ao consultar CEP. Tente novamente.');
+        });
+      }
+
+      // Trigger ao perder foco e ao colar/alterar o campo CEP
+      $('#nr_zipcode').on('blur change paste', function() {
+        var v = $(this).val();
+        fetchAddressByCep(v);
+      });
+
+      // Ao abrir o modal de configurações, se já houver CEP preenchido, buscar endereço
+      $('#configModal').on('shown.bs.modal', function() {
+        var v = $('#nr_zipcode').val();
+        if (v && v.replace(/\D/g, '').length === 8) {
+          fetchAddressByCep(v);
+        }
+      });
+    });
+  </script>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+      Anything you want
+    </div>
+    <!-- Default to the left -->
+    <strong>Copyright &copy; 2016 <a href="#">Company</a>.</strong> All rights reserved.
+  </footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Create the tabs -->
+    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+      <li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+      <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <!-- Home tab content -->
+      <div class="tab-pane active" id="control-sidebar-home-tab">
+        <h3 class="control-sidebar-heading">Recent Activity</h3>
+        <ul class="control-sidebar-menu">
+          <li>
+            <a href="javascript:;">
+              <i class="menu-icon fa fa-birthday-cake bg-red"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">Langdon's Birthday</h4>
+
+                <p>Will be 23 on April 24th</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+        <!-- /.control-sidebar-menu -->
+
+        <h3 class="control-sidebar-heading">Tasks Progress</h3>
+        <ul class="control-sidebar-menu">
+          <li>
+            <a href="javascript:;">
+              <h4 class="control-sidebar-subheading">
+                Custom Template Design
+                <span class="pull-right-container">
+                  <span class="label label-danger pull-right">70%</span>
+                </span>
+              </h4>
+
+              <div class="progress progress-xxs">
+                <div class="progress-bar progress-bar-danger" style="width: 70%"></div>
+              </div>
+            </a>
+          </li>
+        </ul>
+        <!-- /.control-sidebar-menu -->
+
+      </div>
+      <!-- /.tab-pane -->
+      <!-- Stats tab content -->
+      <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div>
+      <!-- /.tab-pane -->
+      <!-- Settings tab content -->
+      <div class="tab-pane" id="control-sidebar-settings-tab">
+        <form method="post">
+          <h3 class="control-sidebar-heading">General Settings</h3>
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Report panel usage
+              <input type="checkbox" class="pull-right" checked>
+            </label>
+
+            <p>
+              Some information about this general settings option
+            </p>
+          </div>
+          <!-- /.form-group -->
+        </form>
+      </div>
+      <!-- /.tab-pane -->
+    </div>
+  </aside>
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- AdminLTE App is already loaded by the layout. -->

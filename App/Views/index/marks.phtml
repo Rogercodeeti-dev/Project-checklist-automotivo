@@ -1,0 +1,237 @@
+  <div class="">
+    <style>
+      #tbmarks td, #tbmarks th { vertical-align: middle !important; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegMark">
+          <span class="glyphicon glyphicon-plus "></span> Adicionar Marca
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbmarks" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Observação</th>
+              <th>Cadastro</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->marks as $mark) { ?>
+            <tr>
+              <td><?= htmlspecialchars($mark['nm_name']) ?></td>
+              <td><?= htmlspecialchars($mark['cartype']) ?></td>
+              <td><?= htmlspecialchars($mark['ds_soon']) ?></td>
+              <td><?= !empty($mark['dt_register']) ? htmlspecialchars(date('d/m/Y', strtotime($mark['dt_register']))) : '' ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-mark" data-id="<?= (int)$mark['id'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-mark" data-id="<?= (int)$mark['id'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(function(){
+      var dtConfig = { language: { url: '/plugins/datatables/Portuguese.json' } };
+      $('#tbmarks').DataTable(dtConfig);
+
+      function showToast(message, type) {
+        toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
+        if (type === 'success') { toastr.success(message); }
+        else { toastr.error(message); }
+      }
+
+      function showMarkAlert(selector, message) {
+        var el = $(selector);
+        el.removeClass('alert-success alert-danger').addClass('alert-danger');
+        el.text(message).show();
+      }
+
+      function refreshMarksTable(callback) {
+        $.post('/listmark', function(html){
+          var tbody = $(html).find('#tbmarks tbody');
+          var table = $('#tbmarks').DataTable();
+          table.destroy();
+          $('#tbmarks tbody').html(tbody.html());
+          $('#tbmarks').DataTable(dtConfig);
+          if (typeof callback === 'function') callback();
+        });
+      }
+
+      $('#btnSaveMark').on('click', function(){
+        var form = $('#formMark');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalRegMark').modal('hide');
+            form[0].reset();
+            showToast(res.message || 'Marca cadastrada com sucesso.', 'success');
+            refreshMarksTable();
+          } else {
+            showToast(res.message || 'Erro ao salvar marca', 'error');
+          }
+        }).fail(function(xhr){
+          console.error('Erro AJAX save_mark:', xhr.responseText || xhr.statusText);
+          showToast('Erro ao salvar marca', 'error');
+        });
+      });
+
+      // Edit
+      $('#tbmarks').on('click', '.edit-mark', function(){
+        var id = $(this).data('id');
+        $.getJSON('/get_mark?id=' + id, function(data){
+          if(!data || !data.id) { showToast('Registro não encontrado', 'error'); return; }
+          $('#edit_mark_id').val(data.id);
+          $('#edit_nm_name').val(data.nm_name);
+          $('#edit_cartype').val(data.cartype);
+          $('#edit_ds_soon').val(data.ds_soon);
+          $('#markEditAlert').hide();
+          $('#modalEditMark').modal('show');
+        }).fail(function(){ showToast('Erro ao buscar marca', 'error'); });
+      });
+
+      // Update
+      $('#btnUpdateMark').on('click', function(){
+        var form = $('#formEditMark');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalEditMark').modal('hide');
+            showToast(res.message || 'Marca atualizada com sucesso.', 'success');
+            refreshMarksTable();
+          } else { showMarkAlert('#markEditAlert', res.message || 'Erro ao atualizar marca'); }
+        }).fail(function(){ showMarkAlert('#markEditAlert', 'Erro ao atualizar marca'); });
+      });
+
+      // Delete
+      var deleteMarkId = null;
+
+      $('#tbmarks').on('click', '.delete-mark', function(){
+        deleteMarkId = $(this).data('id');
+        $('#modalExcluirMarca').modal('show');
+      });
+
+      $('#confirmDeleteMarkBtn').click(function(){
+        if(!deleteMarkId) return;
+        $.post('/delete_mark', { id: deleteMarkId }, function(res){
+          if(res.success){
+            $('#modalExcluirMarca').modal('hide');
+            showToast('Exclusão realizada com sucesso.', 'error');
+            refreshMarksTable();
+          } else {
+            $('#modalExcluirMarca').modal('hide');
+            showToast(res.message || 'Erro ao excluir', 'error');
+          }
+        }, 'json').fail(function(){
+          $('#modalExcluirMarca').modal('hide');
+          showToast('Erro na requisição', 'error');
+        });
+      });
+    });
+  </script>
+
+  <div class="modal fade" id="modalRegMark" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Marca</h4></div>
+        <div class="modal-body">
+          <div id="markCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formMark" action="/save_mark" method="post">
+            <div class="form-group">
+              <label>Nome</label>
+              <input type="text" name="nm_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select name="cartype" class="form-control">
+                <option value="carro">carro</option>
+                <option value="moto">moto</option>
+                <option value="caminhao">caminhão</option>
+                <option value="trator">trator</option>
+                <option value="outro">outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Observação</label>
+              <textarea name="ds_soon" class="form-control"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveMark" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmacao de Exclusao -->
+  <div class="modal fade" id="modalExcluirMarca" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteMarkLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeleteMarkLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir esta marca?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteMarkBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="modalEditMark" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Marca</h4></div>
+        <div class="modal-body">
+          <div id="markEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditMark" action="/update_mark" method="post">
+            <input type="hidden" id="edit_mark_id" name="id" value="">
+            <div class="form-group">
+              <label>Nome</label>
+              <input type="text" id="edit_nm_name" name="nm_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="edit_cartype" name="cartype" class="form-control">
+                <option value="carro">carro</option>
+                <option value="moto">moto</option>
+                <option value="caminhao">caminhão</option>
+                <option value="trator">trator</option>
+                <option value="outro">outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Observação</label>
+              <textarea id="edit_ds_soon" name="ds_soon" class="form-control"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateMark" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

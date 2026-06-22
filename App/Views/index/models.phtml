@@ -1,0 +1,242 @@
+  <div class="">
+    <style>#tbmodels td, #tbmodels th { vertical-align: middle !important; }</style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegModel">
+          <span class="glyphicon glyphicon-plus "></span> Adicionar Modelo
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbmodels" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Marca</th>
+              <th>Tipo</th>
+              <th>Cadastro</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->models as $m) { ?>
+            <tr>
+              <td><?= htmlspecialchars($m['ds_model']) ?></td>
+              <td><?= htmlspecialchars($m['mark_name'] ?? '') ?></td>
+              <td><?= htmlspecialchars($m['type_model']) ?></td>
+              <td><?= !empty($m['dt_register']) ? htmlspecialchars(date('d/m/Y', strtotime($m['dt_register']))) : '' ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-model" data-id="<?= (int)$m['id'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-model" data-id="<?= (int)$m['id'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(function(){
+      var dtConfig = { language: { url: '/plugins/datatables/Portuguese.json' } };
+      $('#tbmodels').DataTable(dtConfig);
+
+      function showToast(message, type) {
+        toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
+        if (type === 'success') { toastr.success(message); }
+        else { toastr.error(message); }
+      }
+
+      function showAlert(selector, message) {
+        var el = $(selector);
+        el.removeClass('alert-success alert-danger').addClass('alert-danger');
+        el.text(message).show();
+      }
+
+      function refreshModelsTable(callback) {
+        $.post('/listmodel', function(html){
+          var tbody = $(html).find('#tbmodels tbody');
+          var table = $('#tbmodels').DataTable();
+          table.destroy();
+          $('#tbmodels tbody').html(tbody.html());
+          $('#tbmodels').DataTable(dtConfig);
+          if (typeof callback === 'function') callback();
+        });
+      }
+
+      // Save
+      $('#btnSaveModel').on('click', function(){
+        var form = $('#formModel');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalRegModel').modal('hide');
+            form[0].reset();
+            showToast('Modelo cadastrado com sucesso.', 'success');
+            refreshModelsTable();
+          } else { showAlert('#modelCreateAlert', res.message || 'Erro ao salvar modelo'); }
+        }).fail(function(){ showAlert('#modelCreateAlert', 'Erro ao salvar modelo'); });
+      });
+
+      // Edit
+      $('#tbmodels').on('click', '.edit-model', function(){
+        var id = $(this).data('id');
+       
+        $.getJSON('/get_model?id=' + id, function(data){
+          if(!data || !data.id) { showToast('Registro não encontrado', 'error'); return; }
+          $('#edit_model_id').val(data.id);
+          $('#edit_id_mark').val(data.id_mark);
+          $('#edit_ds_model').val(data.ds_model);
+          $('#edit_type_model').val(data.type_model);
+          $('#modelEditAlert').hide();
+          $('#modalEditModel').modal('show');
+        }).fail(function(){ showToast('Erro ao buscar modelo', 'error'); });
+      });
+
+      // Update
+      $('#btnUpdateModel').on('click', function(){
+        var form = $('#formEditModel');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalEditModel').modal('hide');
+            showToast('Modelo atualizado com sucesso.', 'success');
+            refreshModelsTable();
+          } else { showAlert('#modelEditAlert', res.message || 'Erro ao atualizar modelo'); }
+        }).fail(function(){ showAlert('#modelEditAlert', 'Erro ao atualizar modelo'); });
+      });
+
+      // Delete
+      var deleteModelId = null;
+
+      $('#tbmodels').on('click', '.delete-model', function(){
+        deleteModelId = $(this).data('id');
+        $('#modalExcluirModelo').modal('show');
+      });
+
+      $('#confirmDeleteModelBtn').click(function(){
+        if(!deleteModelId) return;
+        $.post('/delete_model', { id: deleteModelId }, function(res){
+          if(res.success){
+            $('#modalExcluirModelo').modal('hide');
+            showToast('Exclusão realizada com sucesso.', 'error');
+            refreshModelsTable();
+          } else {
+            $('#modalExcluirModelo').modal('hide');
+            showToast(res.message || 'Erro ao excluir', 'error');
+          }
+        }, 'json').fail(function(){
+          $('#modalExcluirModelo').modal('hide');
+          showToast('Erro na requisição', 'error');
+        });
+      });
+    });
+  </script>
+
+  <div class="modal fade" id="modalRegModel" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Modelo</h4></div>
+        <div class="modal-body">
+          <div id="modelCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formModel" action="/save_model" method="post">
+            <div class="form-group">
+              <label>Marca</label>
+              <select name="id_mark" class="form-control" required>
+                <option value="">-- selecione --</option>
+                <?php foreach (($this->view->marks ?? []) as $mk) { ?>
+                  <option value="<?= (int)$mk['id'] ?>"><?= htmlspecialchars($mk['nm_name']) ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modelo</label>
+              <input type="text" name="ds_model" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select name="type_model" class="form-control">
+                <option value="carro">carro</option>
+                <option value="moto">moto</option>
+                <option value="caminhao">caminhão</option>
+                <option value="trator">trator</option>
+                <option value="outro">outro</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveModel" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmacao de Exclusao -->
+  <div class="modal fade" id="modalExcluirModelo" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModelLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeleteModelLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este modelo?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteModelBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="modalEditModel" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Modelo</h4></div>
+        <div class="modal-body">
+          <div id="modelEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditModel" action="/update_model" method="post">
+            <input type="hidden" id="edit_model_id" name="id" value="">
+            <div class="form-group">
+              <label>Marca</label>
+              <select id="edit_id_mark" name="id_mark" class="form-control" required>
+                <option value="">-- selecione --</option>
+                <?php foreach (($this->view->marks ?? []) as $mk) { ?>
+                  <option value="<?= (int)$mk['id'] ?>"><?= htmlspecialchars($mk['nm_name']) ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modelo</label>
+              <input type="text" id="edit_ds_model" name="ds_model" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="edit_type_model" name="type_model" class="form-control">
+                <option value="carro">carro</option>
+                <option value="moto">moto</option>
+                <option value="caminhao">caminhão</option>
+                <option value="trator">trator</option>
+                <option value="outro">outro</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateModel" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,568 @@
+ 
+  <!-- Content Wrapper. Contains page content -->
+  <div class="">
+    <style>
+      #tbuser td, #tbuser th {
+        vertical-align: middle !important;
+      }
+      #tbuser .user-photo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #ddd;
+      }
+      #tbuser .user-inactive-row {
+        background: #f5f5f5;
+        color: #6c6c6c;
+      }
+      #tbuser .user-inactive-row td {
+        opacity: 0.85;
+      }
+      #tbuser .btn-actions {
+        white-space: nowrap;
+      }
+    </style>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <p>
+  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegUser">
+    <span class="glyphicon glyphicon-plus "></span> Adicionar Usuários
+  </button>
+</p>
+      
+    </section>
+         
+    <!-- Main content -->
+    <section class="content">
+       
+      <div class="row">
+        <div class="col-xs-12">
+
+          <div class="box">
+            
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="tbuser" class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                  <th class="text-center">Foto</th>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Email</th>
+                  <th>Nível</th>
+                  <th class="text-center">Ativo</th>
+                  <th class="text-center">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($this->view->user as $id => $user) {?>
+                  <tr class="<?= ($user['ds_active'] === '1' || $user['ds_active'] === 1) ? '' : 'user-inactive-row' ?>">
+                    <td class="text-center">
+                      <img src="<?= $user['ds_photo'] ? $user['ds_photo'] : '/dist/img/sem-foto.jpg' ?>" class="user-photo" alt="Foto do usuário">
+                    </td>
+                    <td><p><?= htmlspecialchars($user['nm_name']) ?></p></td>
+                    <td><p><?= htmlspecialchars($user['nr_phone'] ?? '') ?></p></td>
+                    <td><p><?= htmlspecialchars($user['ds_email']) ?></p></td>
+                    <td><p><?= $user['ds_level']=== '1' || $user['ds_level'] === 1 ? 'Administrador' : 'Usuário' ?></p></td>
+                    <td class="text-center">
+                      <input type="checkbox" class="toggle-active" data-id="<?= $user['id'] ?>" <?= $user['ds_active'] === '1' || $user['ds_active'] === 1 ? 'checked' : '' ?> title="<?= $user['ds_active'] === '1' || $user['ds_active'] === 1 ? 'Desativar usuário' : 'Ativar usuário' ?>">
+                    </td>
+                    <td class="btn-actions text-center">
+                        <button type="button" class="btn btn-default btn-xs edit-user" data-id="<?= $user['id']; ?>" title="Editar usuário">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </button>
+                        <button type="button" class="btn btn-default btn-xs info-user" data-id="<?= $user['id']; ?>" title="Ver informações">
+                            <span class="glyphicon glyphicon-info-sign"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-xs btn-delete-user" data-id="<?= $user['id']; ?>" title="Excluir usuário">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        <?php if ($user['ds_level'] !== '1' && $user['ds_level'] !== 1) { ?>
+                        <button type="button" class="btn btn-default btn-xs lock-user" data-id="<?= $user['id']; ?>" title="Gerenciar permissões">
+                            <span class="glyphicon glyphicon-lock"></span>
+                        </button>
+                        <?php } ?>
+                    </td>
+                 </tr>
+                  <?php } ?>
+                </tbody>
+               
+              </table>
+
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+               
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  
+  
+<!-- DataTables -->
+<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+
+<!-- page script -->
+<script>
+   
+   $(document).ready(function() {
+    $('#tbuser').DataTable({
+        language: {
+            "decimal": ",",
+            "thousands": ".",
+            "lengthMenu": "Mostrar _MENU_ registros por página",
+            "zeroRecords": "Nada encontrado",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "Nenhum registro disponível",
+            "infoFiltered": "(filtrado de _MAX_ registros no total)",
+            "search": "Pesquisar:",
+            "paginate": {
+                "first": "Primeira",
+                "last": "Última",
+                "next": "Próxima",
+                "previous": "Anterior"
+            },
+            "loadingRecords": "Carregando...",
+            "processing": "Processando...",
+        }
+    });
+});
+
+    
+</script>
+
+
+<!-- Modal para cadastro de usuário -->
+
+<div class="modal fade" id="modalRegUser" tabindex="-1" role="dialog" aria-labelledby="tituloModalUsuario">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content custom-modal-content">
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="tituloModalUsuario">Cadastrar Usuário</h4>
+      </div>
+
+      <div class="modal-body">
+        <form id="insertUser" enctype="multipart/form-data">
+
+          <!-- NOME + LOGIN -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Nome</label>
+                <input type="text" class="form-control" name="nm_name" required>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Login</label>
+                <input type="text" class="form-control" name="nm_login" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" name="ds_email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Senha</label>
+            <input type="password" class="form-control" name="ds_password" required>
+          </div>
+
+          <!-- ADMIN + ATIVO -->
+        <div class="row">
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Nível de Acesso</label><br>
+
+              <label class="checkbox-inline">
+                <input type="checkbox" name="ds_level" value="1"> Administrador
+              </label>
+
+              <small class="text-muted">Desmarcado = Usuário comum</small>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Status do Usuário</label><br>
+
+              <label class="checkbox-inline">
+                <input type="checkbox" name="ds_active" value="1" checked> Usuário ativo
+              </label>
+
+              <small class="text-muted">Desmarcado = Usuário inativo</small>
+            </div>
+          </div>
+
+        </div>
+
+          <!-- TELEFONE + ENDEREÇO -->
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Telefone</label>
+                <input type="text" class="form-control" name="nr_phone">
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="form-group">
+                <label>Endereço</label>
+                <input type="text" class="form-control" name="ds_address">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="form-group">
+                <label>Clique no botão abaixo para selecionar a foto</label>
+                <input type="file" class="form-control" id="ds_photo" name="ds_photo" onchange="previewPhotoUser()">
+              </div>
+            </div>  
+             <div class="col-md-4 text-center">                    
+              <label>Foto</label><br>
+               <img src="/dist/img/sem-foto.jpg" id="previewFoto" width="120" style="border-radius:10px; border:1px solid #ddd; padding:3px; ">
+            </div>
+         </div>
+ 
+          <input type="hidden" name="dt_date" value="<?php echo date('Y-m-d H:i:s'); ?>"> 
+
+          <div class="modal-footer">
+            <button  type="button" class="btn btn-default" data-dismiss="modal" >Cancelar</button>            
+            <!-- <button  type="button" class="btn btn-primary" value="Salvar Usuário" id="btnSaveUser"> -->
+            <button  type="button" class="btn btn-primary" id="btnSaveUser">                                                              
+              <span class="glyphicon glyphicon-ok"></span> Salvar Usuário
+          </div>
+
+          <div id="messageUser" style="display:none;"></div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+    <!-- Modal Editar Usuário -->
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1" role="dialog" aria-labelledby="tituloModalEditarUsuario">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content custom-modal-content">
+              <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+                  <h4 class="modal-title" id="tituloModalEditarUsuario">
+                      <span class="glyphicon glyphicon-edit"></span> Editar Usuário
+                  </h4>
+              </div>
+              <div class="modal-body">
+                  <form id="editUserForm" enctype="multipart/form-data">
+                      <input type="hidden" name="id" id="editUserId">
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Nome</label>
+                            <input type="text" class="form-control" name="nm_name" id="edit_nm_name" required>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Login</label>
+                            <input type="text" class="form-control" name="nm_login" id="edit_nm_login" required>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" name="ds_email" id="edit_ds_email" required>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Senha (deixe em branco para não alterar)</label>
+                        <input type="password" class="form-control" name="ds_password" id="edit_ds_password">
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" name="ds_level" id="edit_ds_level" value="1"> Administrador
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" name="ds_active" id="edit_ds_active" value="1"> Usuário ativo
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" class="form-control" name="nr_phone" id="edit_nr_phone">
+                          </div>
+                        </div>
+                        <div class="col-md-8">
+                          <div class="form-group">
+                            <label>Endereço</label>
+                            <input type="text" class="form-control" name="ds_address" id="edit_ds_address">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-8">
+                          <div class="form-group">
+                            <label>Foto do usuário</label>
+                            <input type="file" class="form-control" id="edit_ds_photo" name="ds_photo" onchange="previewPhotoUser('edit_ds_photo', 'previewFotoEdit')">
+                          </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                          <label>Pré-visualização</label><br>
+                          <img src="/dist/img/sem-foto.jpg" id="previewFotoEdit" width="120" style="border-radius:10px; border:1px solid #ddd; padding:3px;">
+                        </div>
+                      </div>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">
+                      <span class="glyphicon glyphicon-remove"></span>
+                  </button>
+                  <button type="button" class="btn btn-primary" id="btnUpdateUser">
+                      <span class="glyphicon glyphicon-ok"></span>
+                  </button>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Modal Informações do Usuário -->
+    <div class="modal fade" id="modalUserInfo" tabindex="-1" role="dialog" aria-labelledby="tituloModalInfo">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content custom-modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="tituloModalInfo">
+              <span class="glyphicon glyphicon-info-sign"></span> Dados do Usuário
+            </h4>
+          </div>
+          <div class="modal-body" id="userInfoBody">
+            <div class="text-center mb-15">
+              <img id="infoUserPhoto" src="/dist/img/sem-foto.jpg" width="120" style="border-radius:10px; border:1px solid #ddd; padding:3px;">
+            </div>
+            <p><strong>Nome:</strong> <span id="info_nm_name"></span></p>
+            <p><strong>Login:</strong> <span id="info_nm_login"></span></p>
+            <p><strong>Email:</strong> <span id="info_ds_email"></span></p>
+            <p><strong>Telefone:</strong> <span id="info_nr_phone"></span></p>
+            <p><strong>Endereço:</strong> <span id="info_ds_address"></span></p>
+            <p><strong>Nível:</strong> <span id="info_ds_level"></span></p>
+            <p><strong>Ativo:</strong> <span id="info_ds_active"></span></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Permissões -->
+    <div class="modal fade" id="modalPermissions" tabindex="-1" role="dialog" aria-labelledby="tituloModalPermissions">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content custom-modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="tituloModalPermissions">
+              <span class="glyphicon glyphicon-lock"></span> Permissões do Usuário
+            </h4>
+          </div>
+          <div class="modal-body">
+            <p>Esta tela permite sugerir permissões para o usuário. Exemplo:</p>
+            <div class="checkbox">
+              <label><input type="checkbox" disabled> Visualizar relatórios</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" disabled> Gerenciar conteúdos</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" disabled> Acessar painel administrativo</label>
+            </div>
+            <p class="text-muted">A definição real de permissões pode ser implementada posteriormente.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+<div class="modal fade" id="modalExcluirUsuario" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="confirmDeleteLabel">Confirmar Exclusão</h4>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir este usuário?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewPhotoUser(inputId = 'ds_photo', previewId = 'previewFoto') {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+let deleteUserId = null;
+
+function formatLevel(level) {
+    return level === '1' || level === 1 ? 'Administrador' : 'Usuário';
+}
+
+$(document).ready(function() {
+    $(document).on('click', '.edit-user', function() {
+        const id = $(this).data('id');
+        $.get('/get_user', { id: id }, function(response) {
+            if (response && response.id) {
+                $('#editUserId').val(response.id);
+                $('#edit_nm_name').val(response.nm_name);
+                $('#edit_nm_login').val(response.nm_login);
+                $('#edit_ds_email').val(response.ds_email);
+                $('#edit_nr_phone').val(response.nr_phone);
+                $('#edit_ds_address').val(response.ds_address);
+                $('#edit_ds_level').prop('checked', response.ds_level == 1);
+                $('#edit_ds_active').prop('checked', response.ds_active == 1);
+                $('#previewFotoEdit').attr('src', response.ds_photo ? response.ds_photo : '/dist/img/sem-foto.jpg');
+                $('#modalEditarUsuario').modal('show');
+            }
+        }, 'json');
+    });
+
+    $(document).on('click', '#btnUpdateUser', function() {
+        let formData = new FormData($('#editUserForm')[0]);
+        $.ajax({
+            type: 'post',
+            url: '/update_user',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('Usuário atualizado com sucesso!');
+                    $('#modalEditarUsuario').modal('hide');
+                    location.reload();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function() {
+                toastr.error('Erro ao atualizar usuário.');
+            }
+        });
+    });
+
+    $(document).on('click', '.info-user', function() {
+        const id = $(this).data('id');
+        $.get('/get_user', { id: id }, function(response) {
+            if (response && response.id) {
+                $('#infoUserPhoto').attr('src', response.ds_photo ? response.ds_photo : '/dist/img/sem-foto.jpg');
+                $('#info_nm_name').text(response.nm_name);
+                $('#info_nm_login').text(response.nm_login);
+                $('#info_ds_email').text(response.ds_email);
+                $('#info_nr_phone').text(response.nr_phone);
+                $('#info_ds_address').text(response.ds_address);
+                $('#info_ds_level').text(formatLevel(response.ds_level));
+                $('#info_ds_active').text(response.ds_active == 1 ? 'Sim' : 'Não');
+                $('#modalUserInfo').modal('show');
+            }
+        }, 'json');
+    });
+
+    $(document).on('click', '.lock-user', function() {
+        $('#modalPermissions').modal('show');
+    });
+
+    $(document).on('click', '.btn-delete-user', function() {
+        deleteUserId = $(this).data('id');
+        $('#modalExcluirUsuario').modal('show');
+    });
+
+    $('#confirmDeleteBtn').click(function() {
+        if (!deleteUserId) return;
+        $.post('/delete_user', { id: deleteUserId }, function(response) {
+            if (response.success) {
+                toastr.success('Usuário excluído com sucesso!');
+                $('#modalExcluirUsuario').modal('hide');
+                location.reload();
+            } else {
+                toastr.error('Erro ao excluir usuário.');
+            }
+        }, 'json');
+    });
+
+    $(document).on('change', '.toggle-active', function() {
+        const id = $(this).data('id');
+        const active = $(this).is(':checked') ? 1 : 0;
+        const checkbox = $(this);
+        const row = checkbox.closest('tr');
+        $.post('/toggle_user_active', { id: id, active: active }, function(response) {
+            if (response.success) {
+                checkbox.attr('title', active ? 'Desativar usuário' : 'Ativar usuário');
+                row.toggleClass('user-inactive-row', !active);
+                toastr.success('Status do usuário atualizado.');
+            } else {
+                toastr.error('Erro ao atualizar status.');
+                checkbox.prop('checked', !active);
+            }
+        }, 'json');
+    });
+});
+</script>
+
+
+
+
+
+

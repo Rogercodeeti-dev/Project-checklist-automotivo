@@ -1,0 +1,19 @@
+{
+	"name": "rogercode/miniframework",
+	"require": {
+		"php": ">=7.0",
+		"phpmailer/phpmailer": "^6.8"
+	},
+	"authors": [
+		{
+			"name": "Rogercode",
+			"email": "rogercodeeti@gmail.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"App\\": "App/",
+			"MF\\": "vendor/MF/"
+		}
+	}
+}
