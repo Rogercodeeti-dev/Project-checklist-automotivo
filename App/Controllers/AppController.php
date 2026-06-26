@@ -21,6 +21,7 @@ class AppController extends Action {
         // checkbox → se não vier no POST = 0
         $ds_level  = isset($_POST['ds_level']) ? 1 : 0;   // admin
         $ds_active = isset($_POST['ds_active']) ? 1 : 0;  // ativo
+        $id_position = isset($_POST['id_position']) && $_POST['id_position'] !== '' ? (int) $_POST['id_position'] : null;
 
         // data atual do cadastro
         $dataCadastro = date('Y-m-d H:i:s');
@@ -33,6 +34,7 @@ class AppController extends Action {
         $user->__set('ds_active',  $ds_active);
         $user->__set('nr_phone',   trim($_POST['nr_phone']));
         $user->__set('ds_address', trim($_POST['ds_address']));
+        $user->__set('id_position', $id_position);
 
         $photoPath = '/dist/img/sem-foto.jpg';
         if (!empty($_FILES['ds_photo']['name']) && $_FILES['ds_photo']['error'] === UPLOAD_ERR_OK) {
@@ -61,7 +63,8 @@ class AppController extends Action {
             'nr_phone' => $user->__get('nr_phone'),
             'ds_level' => $user->__get('ds_level'),
             'ds_active' => $user->__get('ds_active') ? 'Sim' : 'Não',
-            'ds_photo' => $user->__get('ds_photo')
+            'ds_photo' => $user->__get('ds_photo'),
+            'id_position' => $user->__get('id_position')
         ];
 
         echo json_encode(['success' => true, 'user' => $userData]);
@@ -102,6 +105,14 @@ class AppController extends Action {
 		$user->__set('id', $id);
 		$dadosUsuario = $user->getById();
 
+		if (!empty($dadosUsuario['id_position'])) {
+			$position = Container::getModel('Position');
+			$posData = $position->getById($dadosUsuario['id_position']);
+			$dadosUsuario['ds_position'] = $posData['ds_description'] ?? '';
+		} else {
+			$dadosUsuario['ds_position'] = '';
+		}
+
 		header('Content-Type: application/json');
 		echo json_encode($dadosUsuario ?: []);
 		exit;
@@ -133,6 +144,7 @@ class AppController extends Action {
 			$user->__set('ds_address', trim($_POST['ds_address'] ?? $existingUser['ds_address']));
 			$user->__set('ds_level', $existingUser['ds_level'] ?? 0);
 			$user->__set('ds_active', $existingUser['ds_active'] ?? 0);
+			$user->__set('id_position', $existingUser['id_position'] ?? null);
 
 			if (!empty($_POST['ds_password'])) {
 				$user->__set('ds_password', trim($_POST['ds_password']));
@@ -196,6 +208,7 @@ class AppController extends Action {
 
 			$ds_level  = isset($_POST['ds_level']) ? 1 : ($existingUser['ds_level'] ?? 0);
 			$ds_active = isset($_POST['ds_active']) ? 1 : ($existingUser['ds_active'] ?? 0);
+			$id_position = isset($_POST['id_position']) && $_POST['id_position'] !== '' ? (int) $_POST['id_position'] : ($existingUser['id_position'] ?? null);
 
 			$user->__set('nm_name', trim($_POST['nm_name']));
 			$user->__set('nm_login', trim($_POST['nm_login']));
@@ -204,6 +217,7 @@ class AppController extends Action {
 			$user->__set('ds_active', $ds_active);
 			$user->__set('nr_phone', trim($_POST['nr_phone']));
 			$user->__set('ds_address', trim($_POST['ds_address']));
+			$user->__set('id_position', $id_position);
 
 			if (!empty($_POST['ds_password'])) {
 				$user->__set('ds_password', trim($_POST['ds_password']));
@@ -348,6 +362,7 @@ class AppController extends Action {
 		$user->__set('ds_address', $existingUser['ds_address']);
 		$user->__set('ds_active', $active);
 		$user->__set('ds_photo', $existingUser['ds_photo'] ?? '/dist/img/sem-foto.jpg');
+		$user->__set('id_position', $existingUser['id_position'] ?? null);
 		$user->update();
 		echo json_encode(['success' => true, 'active' => $active]);
 	}
@@ -796,6 +811,86 @@ class AppController extends Action {
 			header('Content-Type: application/json');
 			echo json_encode(['success' => false, 'message' => 'Erro ao excluir veículo.']);
 		}
+	}
+
+	// ===================== CARGO =====================
+
+	public function save_position() {
+		try {
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($ds_description === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'A descrição do cargo é obrigatória.']);
+				return;
+			}
+
+			$position = Container::getModel('Position');
+			$position->__set('ds_description', $ds_description);
+			$id = $position->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Cargo cadastrado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Este cargo já está cadastrado.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar cargo.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_position() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$position = Container::getModel('Position');
+		$data = $position->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_position() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_description === '') { echo json_encode(['success' => false, 'message' => 'A descrição do cargo é obrigatória.']); return; }
+			$position = Container::getModel('Position');
+			$position->__set('id', $id);
+			$position->__set('ds_description', $ds_description);
+			$ok = $position->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Cargo atualizado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Este cargo já está cadastrado.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar cargo.']);
+			}
+		}
+	}
+
+	public function delete_position() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$position = Container::getModel('Position');
+			$ok = $position->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Cargo excluído com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir cargo.']);
+		}
+	}
+
+	public function get_all_positions() {
+		$position = Container::getModel('Position');
+		$positions = $position->getAllPositions();
+		header('Content-Type: application/json');
+		echo json_encode($positions ?: []);
+		exit;
 	}
 
 	public function get_all_models() {

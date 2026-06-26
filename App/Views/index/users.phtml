@@ -50,6 +50,7 @@
                   <th>Nome</th>
                   <th>Telefone</th>
                   <th>Email</th>
+                  <th>Cargo</th>
                   <th>Nível</th>
                   <th class="text-center">Ativo</th>
                   <th class="text-center">Ações</th>
@@ -64,6 +65,7 @@
                     <td><p><?= htmlspecialchars($user['nm_name']) ?></p></td>
                     <td><p><?= htmlspecialchars($user['nr_phone'] ?? '') ?></p></td>
                     <td><p><?= htmlspecialchars($user['ds_email']) ?></p></td>
+                    <td><p><?= htmlspecialchars($user['ds_position'] ?? '') ?></p></td>
                     <td><p><?= $user['ds_level']=== '1' || $user['ds_level'] === 1 ? 'Administrador' : 'Usuário' ?></p></td>
                     <td class="text-center">
                       <input type="checkbox" class="toggle-active" data-id="<?= $user['id'] ?>" <?= $user['ds_active'] === '1' || $user['ds_active'] === 1 ? 'checked' : '' ?> title="<?= $user['ds_active'] === '1' || $user['ds_active'] === 1 ? 'Desativar usuário' : 'Ativar usuário' ?>">
@@ -175,9 +177,24 @@
             <input type="email" class="form-control" name="ds_email" required>
           </div>
 
-          <div class="form-group">
-            <label>Senha</label>
-            <input type="password" class="form-control" name="ds_password" required>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Senha</label>
+                <input type="password" class="form-control" name="ds_password" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Cargo</label>
+                <select class="form-control" name="id_position" id="id_position">
+                  <option value="">Selecione...</option>
+                  <?php foreach ($this->view->positions as $pos) { ?>
+                  <option value="<?= (int)$pos['id'] ?>"><?= htmlspecialchars($pos['ds_description']) ?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
           </div>
 
           <!-- ADMIN + ATIVO -->
@@ -294,9 +311,24 @@
                         <input type="email" class="form-control" name="ds_email" id="edit_ds_email" required>
                       </div>
 
-                      <div class="form-group">
-                        <label>Senha (deixe em branco para não alterar)</label>
-                        <input type="password" class="form-control" name="ds_password" id="edit_ds_password">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Senha (deixe em branco para não alterar)</label>
+                            <input type="password" class="form-control" name="ds_password" id="edit_ds_password">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Cargo</label>
+                            <select class="form-control" name="id_position" id="edit_id_position">
+                              <option value="">Selecione...</option>
+                              <?php foreach ($this->view->positions as $pos) { ?>
+                              <option value="<?= (int)$pos['id'] ?>"><?= htmlspecialchars($pos['ds_description']) ?></option>
+                              <?php } ?>
+                            </select>
+                          </div>
+                        </div>
                       </div>
 
                       <div class="row">
@@ -378,7 +410,8 @@
             <p><strong>Email:</strong> <span id="info_ds_email"></span></p>
             <p><strong>Telefone:</strong> <span id="info_nr_phone"></span></p>
             <p><strong>Endereço:</strong> <span id="info_ds_address"></span></p>
-            <p><strong>Nível:</strong> <span id="info_ds_level"></span></p>
+            <p><strong>Cargo:</strong> <span id="info_ds_position"></span></p>
+            <p><strong></strong>Nível:</strong> <span id="info_ds_level"></span></p>
             <p><strong>Ativo:</strong> <span id="info_ds_active"></span></p>
           </div>
           <div class="modal-footer">
@@ -473,6 +506,7 @@ $(document).ready(function() {
                 $('#edit_ds_address').val(response.ds_address);
                 $('#edit_ds_level').prop('checked', response.ds_level == 1);
                 $('#edit_ds_active').prop('checked', response.ds_active == 1);
+                $('#edit_id_position').val(response.id_position || '');
                 $('#previewFotoEdit').attr('src', response.ds_photo ? response.ds_photo : '/dist/img/sem-foto.jpg');
                 $('#modalEditarUsuario').modal('show');
             }
@@ -513,6 +547,7 @@ $(document).ready(function() {
                 $('#info_ds_email').text(response.ds_email);
                 $('#info_nr_phone').text(response.nr_phone);
                 $('#info_ds_address').text(response.ds_address);
+                $('#info_ds_position').text(response.ds_position || '');
                 $('#info_ds_level').text(formatLevel(response.ds_level));
                 $('#info_ds_active').text(response.ds_active == 1 ? 'Sim' : 'Não');
                 $('#modalUserInfo').modal('show');

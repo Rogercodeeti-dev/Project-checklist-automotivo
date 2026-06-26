@@ -20,7 +20,10 @@ class IndexController extends Action {
 	public function listuser() {
         $user = Container::getModel('User');
 		$users= $user->getAllUsers();
-		$this->view->user = $users; 
+		$position = Container::getModel('Position');
+		$positions = $position->getAllPositions();
+		$this->view->user = $users;
+		$this->view->positions = $positions;
 		$this->render('users');
 	}
 
@@ -112,6 +115,13 @@ class IndexController extends Action {
 		$this->view->typevehicles = $typevehicles;
 		$this->view->marks = $marks;
 		$this->render('vehicles');
+	}
+
+	public function listposition() {
+		$position = Container::getModel('Position');
+		$positions = $position->getAllPositions();
+		$this->view->positions = $positions;
+		$this->render('positions');
 	}
 
 	//Update module

@@ -1,0 +1,194 @@
+  <div class="">
+    <style>
+      #tbpositions td, #tbpositions th { vertical-align: middle !important; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegPosition">
+          <span class="glyphicon glyphicon-plus "></span> Adicionar Cargo
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbpositions" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->positions as $position) { ?>
+            <tr>
+              <td><?= htmlspecialchars($position['ds_description']) ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-position" data-id="<?= (int)$position['id'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-position" data-id="<?= (int)$position['id'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(function(){
+      var dtConfig = { language: { url: '/plugins/datatables/Portuguese.json' } };
+      $('#tbpositions').DataTable(dtConfig);
+
+      function showToast(message, type) {
+        toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
+        if (type === 'success') { toastr.success(message); }
+        else { toastr.error(message); }
+      }
+
+      function refreshPositionsTable(callback) {
+        $.post('/listposition', function(html){
+          var tbody = $(html).find('#tbpositions tbody');
+          var table = $('#tbpositions').DataTable();
+          table.destroy();
+          $('#tbpositions tbody').html(tbody.html());
+          $('#tbpositions').DataTable(dtConfig);
+          if (typeof callback === 'function') callback();
+        });
+      }
+
+      $('#btnSavePosition').on('click', function(){
+        var form = $('#formPosition');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalRegPosition').modal('hide');
+            form[0].reset();
+            showToast(res.message || 'Cargo cadastrado com sucesso.', 'success');
+            refreshPositionsTable();
+          } else {
+            showToast(res.message || 'Erro ao salvar cargo', 'error');
+          }
+        }).fail(function(xhr){
+          console.error('Erro AJAX save_position:', xhr.responseText || xhr.statusText);
+          showToast('Erro ao salvar cargo', 'error');
+        });
+      });
+
+      // Edit
+      $('#tbpositions').on('click', '.edit-position', function(){
+        var id = $(this).data('id');
+        $.getJSON('/get_position?id=' + id, function(data){
+          if(!data || !data.id) { showToast('Registro não encontrado', 'error'); return; }
+          $('#edit_position_id').val(data.id);
+          $('#edit_ds_description').val(data.ds_description);
+          $('#modalEditPosition').modal('show');
+        }).fail(function(){ showToast('Erro ao buscar cargo', 'error'); });
+      });
+
+      // Update
+      $('#btnUpdatePosition').on('click', function(){
+        var form = $('#formEditPosition');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalEditPosition').modal('hide');
+            showToast(res.message || 'Cargo atualizado com sucesso.', 'success');
+            refreshPositionsTable();
+          } else { showToast(res.message || 'Erro ao atualizar cargo', 'error'); }
+        }).fail(function(){ showToast('Erro ao atualizar cargo', 'error'); });
+      });
+
+      // Delete
+      var deletePositionId = null;
+
+      $('#tbpositions').on('click', '.delete-position', function(){
+        deletePositionId = $(this).data('id');
+        $('#modalExcluirPosition').modal('show');
+      });
+
+      $('#confirmDeletePositionBtn').click(function(){
+        if(!deletePositionId) return;
+        $.post('/delete_position', { id: deletePositionId }, function(res){
+          if(res.success){
+            $('#modalExcluirPosition').modal('hide');
+            showToast('Cargo excluído com sucesso.', 'success');
+            refreshPositionsTable();
+          } else {
+            $('#modalExcluirPosition').modal('hide');
+            showToast(res.message || 'Erro ao excluir', 'error');
+          }
+        }, 'json').fail(function(){
+          $('#modalExcluirPosition').modal('hide');
+          showToast('Erro na requisição', 'error');
+        });
+      });
+    });
+  </script>
+
+  <div class="modal fade" id="modalRegPosition" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Cargo</h4></div>
+        <div class="modal-body">
+          <div id="positionCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formPosition" action="/save_position" method="post">
+            <div class="form-group">
+              <label>Descrição do Cargo</label>
+              <input type="text" name="ds_description" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSavePosition" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmacao de Exclusao -->
+  <div class="modal fade" id="modalExcluirPosition" tabindex="-1" role="dialog" aria-labelledby="confirmDeletePositionLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeletePositionLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este cargo?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeletePositionBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="modalEditPosition" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Cargo</h4></div>
+        <div class="modal-body">
+          <div id="positionEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditPosition" action="/update_position" method="post">
+            <input type="hidden" id="edit_position_id" name="id" value="">
+            <div class="form-group">
+              <label>Descrição do Cargo</label>
+              <input type="text" id="edit_ds_description" name="ds_description" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdatePosition" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

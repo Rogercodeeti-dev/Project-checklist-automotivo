@@ -209,6 +209,43 @@ class Route extends Bootstrap {
 			'action' => 'delete_typevehicle'
 		);
 
+		//Cargo
+		$routes['listposition'] = array(
+			'route' => '/listposition',
+			'controller' => 'IndexController',
+			'action' => 'listposition'
+		);
+
+		$routes['save_position'] = array(
+			'route' => '/save_position',
+			'controller' => 'AppController',
+			'action' => 'save_position'
+		);
+
+		$routes['get_position'] = array(
+			'route' => '/get_position',
+			'controller' => 'AppController',
+			'action' => 'get_position'
+		);
+
+		$routes['update_position'] = array(
+			'route' => '/update_position',
+			'controller' => 'AppController',
+			'action' => 'update_position'
+		);
+
+		$routes['delete_position'] = array(
+			'route' => '/delete_position',
+			'controller' => 'AppController',
+			'action' => 'delete_position'
+		);
+
+		$routes['get_all_positions'] = array(
+			'route' => '/get_all_positions',
+			'controller' => 'AppController',
+			'action' => 'get_all_positions'
+		);
+
 		//Veículos
 		$routes['listvehicle'] = array(
 			'route' => '/listvehicle',

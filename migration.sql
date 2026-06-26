@@ -34,3 +34,14 @@ CREATE TABLE IF NOT EXISTS tb_client (
     UNIQUE KEY uk_cpf (nr_cpf),
     UNIQUE KEY uk_cnpj (nr_cnpj)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Tabela de Cargo
+CREATE TABLE IF NOT EXISTS tb_position (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ds_description VARCHAR(255) NOT NULL,
+    UNIQUE KEY uk_ds_description (ds_description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Adicionar coluna de cargo na tabela tb_user
+ALTER TABLE tb_user ADD COLUMN id_position INT NULL;
+ALTER TABLE tb_user ADD CONSTRAINT fk_user_position FOREIGN KEY (id_position) REFERENCES tb_position(id) ON DELETE SET NULL;

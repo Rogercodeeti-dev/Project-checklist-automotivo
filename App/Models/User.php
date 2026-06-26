@@ -20,6 +20,7 @@ class User extends Model{
     protected ?string $nr_phone = null;
     protected ?string $ds_address = null;
     protected ?string $ds_photo = null;
+    protected ?int $id_position = null;
 
     protected ?string $dt_date = null;    // data de cadastro (pode virar DateTime depois)
 
@@ -38,17 +39,18 @@ class User extends Model{
 	// =========================
 	public function save()
 {
-    $query = "INSERT INTO tb_user 
+    $query = "INSERT INTO tb_user
     (
         nm_name,
         nm_login,
         ds_email,
-        ds_password,        
+        ds_password,
         ds_level,
         ds_active,
         nr_phone,
         ds_address,
         ds_photo,
+        id_position,
         dt_date
     )
     VALUES
@@ -56,12 +58,13 @@ class User extends Model{
         :nm_name,
         :nm_login,
         :ds_email,
-        :ds_password,      
+        :ds_password,
         :ds_level,
         :ds_active,
         :nr_phone,
         :ds_address,
         :ds_photo,
+        :id_position,
         NOW()
     )";
 
@@ -78,7 +81,7 @@ class User extends Model{
         password_hash($this->__get('ds_password'), PASSWORD_DEFAULT)
     );
 
-    
+
 
     // nível do usuário (ex: admin = 1, usuário comum = 0)
     $stmt->bindValue(':ds_level', $this->__get('ds_level') ?? 0);
@@ -90,6 +93,7 @@ class User extends Model{
     $stmt->bindValue(':nr_phone', $this->__get('nr_phone'));
     $stmt->bindValue(':ds_address', $this->__get('ds_address'));
     $stmt->bindValue(':ds_photo', $this->__get('ds_photo') ?? '/dist/img/sem-foto.jpg');
+    $stmt->bindValue(':id_position', $this->__get('id_position') ?: null, \PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -113,7 +117,8 @@ class User extends Model{
                 ds_active      = :ds_active,
                 nr_phone       = :nr_phone,
                 ds_address     = :ds_address,
-                ds_photo       = :ds_photo
+                ds_photo       = :ds_photo,
+                id_position    = :id_position
               WHERE id = :id";
 
     $stmt = $this->db->prepare($query);
@@ -126,6 +131,7 @@ class User extends Model{
     $stmt->bindValue(':nr_phone', $this->__get('nr_phone'));
     $stmt->bindValue(':ds_address', $this->__get('ds_address'));
     $stmt->bindValue(':ds_photo', $this->__get('ds_photo') ?? '/dist/img/sem-foto.jpg');
+    $stmt->bindValue(':id_position', $this->__get('id_position') ?: null, \PDO::PARAM_INT);
     $stmt->bindValue(':id', $this->__get('id'));
 
     $stmt->execute();
@@ -189,16 +195,19 @@ class User extends Model{
 	// =========================
 	public function getAllUsers() {
 
-		$query = "SELECT 
-					id,
-					nm_name,
-					nm_login,
-					ds_email,
-				nr_phone,
-				ds_level,
-				ds_active,
-				ds_photo
-			  FROM tb_user";
+		$query = "SELECT
+					u.id,
+					u.nm_name,
+					u.nm_login,
+					u.ds_email,
+				u.nr_phone,
+				u.ds_level,
+				u.ds_active,
+				u.ds_photo,
+				u.id_position,
+				p.ds_description AS ds_position
+			  FROM tb_user u
+			  LEFT JOIN tb_position p ON p.id = u.id_position";
 
 		$stmt = $this->db->prepare($query);
 		$stmt->execute();

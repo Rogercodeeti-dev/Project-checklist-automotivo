@@ -35,11 +35,19 @@ $(document).ready(() => {
                                        '</button>';
                     }
 
+                    // Busca a descrição do cargo selecionado
+                    var positionName = '';
+                    var positionSelect = $('#id_position');
+                    if (positionSelect.length && positionSelect.val()) {
+                        positionName = positionSelect.find('option:selected').text();
+                    }
+
                     var newRow = '<tr>' +
                         '<td class="text-center"><img src="' + (response.user.ds_photo || '/dist/img/sem-foto.jpg') + '" width="50" height="50" style="border-radius:50%; object-fit:cover; border:1px solid #ddd;"></td>' +
                         '<td><p>' + response.user.nm_name + '</p></td>' +
                         '<td><p>' + (response.user.nr_phone || '') + '</p></td>' +
                         '<td><p>' + response.user.ds_email + '</p></td>' +
+                        '<td><p>' + positionName + '</p></td>' +
                         '<td><p>' + (response.user.ds_level == 1 ? 'Administrador' : 'Usuário') + '</p></td>' +
                         '<td class="text-center"><input type="checkbox" class="toggle-active" data-id="' + response.user.id + '" checked title="Desativar usuário"></td>' +
                         '<td class="btn-actions text-center">' + actionButtons + '</td>' +
