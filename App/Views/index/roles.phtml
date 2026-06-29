@@ -1,0 +1,194 @@
+  <div class="">
+    <style>
+      #tbroles td, #tbroles th { vertical-align: middle !important; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegRole">
+          <span class="glyphicon glyphicon-plus "></span> Adicionar Perfil de Acesso
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbroles" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->roles as $role) { ?>
+            <tr>
+              <td><?= htmlspecialchars($role['ds_description']) ?></td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-role" data-id="<?= (int)$role['id'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-role" data-id="<?= (int)$role['id'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(function(){
+      var dtConfig = { language: { url: '/plugins/datatables/Portuguese.json' } };
+      $('#tbroles').DataTable(dtConfig);
+
+      function showToast(message, type) {
+        toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
+        if (type === 'success') { toastr.success(message); }
+        else { toastr.error(message); }
+      }
+
+      function refreshRolesTable(callback) {
+        $.post('/listrole', function(html){
+          var tbody = $(html).find('#tbroles tbody');
+          var table = $('#tbroles').DataTable();
+          table.destroy();
+          $('#tbroles tbody').html(tbody.html());
+          $('#tbroles').DataTable(dtConfig);
+          if (typeof callback === 'function') callback();
+        });
+      }
+
+      $('#btnSaveRole').on('click', function(){
+        var form = $('#formRole');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalRegRole').modal('hide');
+            form[0].reset();
+            showToast(res.message || 'Perfil de acesso cadastrado com sucesso.', 'success');
+            refreshRolesTable();
+          } else {
+            showToast(res.message || 'Erro ao salvar perfil de acesso', 'error');
+          }
+        }).fail(function(xhr){
+          console.error('Erro AJAX save_role:', xhr.responseText || xhr.statusText);
+          showToast('Erro ao salvar perfil de acesso', 'error');
+        });
+      });
+
+      // Edit
+      $('#tbroles').on('click', '.edit-role', function(){
+        var id = $(this).data('id');
+        $.getJSON('/get_role?id=' + id, function(data){
+          if(!data || !data.id) { showToast('Registro não encontrado', 'error'); return; }
+          $('#edit_role_id').val(data.id);
+          $('#edit_role_ds_description').val(data.ds_description);
+          $('#modalEditRole').modal('show');
+        }).fail(function(){ showToast('Erro ao buscar perfil de acesso', 'error'); });
+      });
+
+      // Update
+      $('#btnUpdateRole').on('click', function(){
+        var form = $('#formEditRole');
+        $.ajax({ url: form.attr('action'), method: 'POST', data: form.serialize(), dataType: 'json' })
+        .done(function(res){
+          if(res.success){
+            $('#modalEditRole').modal('hide');
+            showToast(res.message || 'Perfil de acesso atualizado com sucesso.', 'success');
+            refreshRolesTable();
+          } else { showToast(res.message || 'Erro ao atualizar perfil de acesso', 'error'); }
+        }).fail(function(){ showToast('Erro ao atualizar perfil de acesso', 'error'); });
+      });
+
+      // Delete
+      var deleteRoleId = null;
+
+      $('#tbroles').on('click', '.delete-role', function(){
+        deleteRoleId = $(this).data('id');
+        $('#modalExcluirRole').modal('show');
+      });
+
+      $('#confirmDeleteRoleBtn').click(function(){
+        if(!deleteRoleId) return;
+        $.post('/delete_role', { id: deleteRoleId }, function(res){
+          if(res.success){
+            $('#modalExcluirRole').modal('hide');
+            showToast('Perfil de acesso excluído com sucesso.', 'success');
+            refreshRolesTable();
+          } else {
+            $('#modalExcluirRole').modal('hide');
+            showToast(res.message || 'Erro ao excluir', 'error');
+          }
+        }, 'json').fail(function(){
+          $('#modalExcluirRole').modal('hide');
+          showToast('Erro na requisição', 'error');
+        });
+      });
+    });
+  </script>
+
+  <div class="modal fade" id="modalRegRole" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Perfil de Acesso</h4></div>
+        <div class="modal-body">
+          <div id="roleCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formRole" action="/save_role" method="post">
+            <div class="form-group">
+              <label>Descrição do Perfil</label>
+              <input type="text" name="ds_description" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveRole" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmacao de Exclusao -->
+  <div class="modal fade" id="modalExcluirRole" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteRoleLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeleteRoleLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este perfil de acesso?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteRoleBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="modalEditRole" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Perfil de Acesso</h4></div>
+        <div class="modal-body">
+          <div id="roleEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditRole" action="/update_role" method="post">
+            <input type="hidden" id="edit_role_id" name="id" value="">
+            <div class="form-group">
+              <label>Descrição do Perfil</label>
+              <input type="text" id="edit_role_ds_description" name="ds_description" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateRole" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -246,6 +246,43 @@ class Route extends Bootstrap {
 			'action' => 'get_all_positions'
 		);
 
+		//Perfil de Acesso
+		$routes['listrole'] = array(
+			'route' => '/listrole',
+			'controller' => 'IndexController',
+			'action' => 'listrole'
+		);
+
+		$routes['save_role'] = array(
+			'route' => '/save_role',
+			'controller' => 'AppController',
+			'action' => 'save_role'
+		);
+
+		$routes['get_role'] = array(
+			'route' => '/get_role',
+			'controller' => 'AppController',
+			'action' => 'get_role'
+		);
+
+		$routes['update_role'] = array(
+			'route' => '/update_role',
+			'controller' => 'AppController',
+			'action' => 'update_role'
+		);
+
+		$routes['delete_role'] = array(
+			'route' => '/delete_role',
+			'controller' => 'AppController',
+			'action' => 'delete_role'
+		);
+
+		$routes['get_all_roles'] = array(
+			'route' => '/get_all_roles',
+			'controller' => 'AppController',
+			'action' => 'get_all_roles'
+		);
+
 		//Veículos
 		$routes['listvehicle'] = array(
 			'route' => '/listvehicle',

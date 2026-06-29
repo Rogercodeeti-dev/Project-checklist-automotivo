@@ -42,6 +42,21 @@ CREATE TABLE IF NOT EXISTS tb_position (
     UNIQUE KEY uk_ds_description (ds_description)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Tabela de Perfil de Acesso (Role)
+CREATE TABLE IF NOT EXISTS tb_role (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ds_description VARCHAR(255) NOT NULL,
+    UNIQUE KEY uk_role_description (ds_description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Inserir perfis padrão
+INSERT INTO tb_role (ds_description) VALUES ('Administrador');
+INSERT INTO tb_role (ds_description) VALUES ('Usuário');
+
 -- Adicionar coluna de cargo na tabela tb_user
 ALTER TABLE tb_user ADD COLUMN id_position INT NULL;
 ALTER TABLE tb_user ADD CONSTRAINT fk_user_position FOREIGN KEY (id_position) REFERENCES tb_position(id) ON DELETE SET NULL;
+
+-- Adicionar coluna de perfil de acesso na tabela tb_user
+ALTER TABLE tb_user ADD COLUMN id_role INT NULL;
+ALTER TABLE tb_user ADD CONSTRAINT fk_user_role FOREIGN KEY (id_role) REFERENCES tb_role(id) ON DELETE SET NULL;

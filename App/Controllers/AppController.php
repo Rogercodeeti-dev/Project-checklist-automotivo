@@ -18,10 +18,10 @@ class AppController extends Action {
     try {
         $user = Container::getModel('User');
 
-        // checkbox → se não vier no POST = 0
-        $ds_level  = isset($_POST['ds_level']) ? 1 : 0;   // admin
+        // checkbox → se não vier no POST = 0        
         $ds_active = isset($_POST['ds_active']) ? 1 : 0;  // ativo
         $id_position = isset($_POST['id_position']) && $_POST['id_position'] !== '' ? (int) $_POST['id_position'] : null;
+        $id_role = isset($_POST['id_role']) && $_POST['id_role'] !== '' ? (int) $_POST['id_role'] : null;
 
         // data atual do cadastro
         $dataCadastro = date('Y-m-d H:i:s');
@@ -29,12 +29,12 @@ class AppController extends Action {
         $user->__set('nm_name',    trim($_POST['nm_name']));
         $user->__set('nm_login',   trim($_POST['nm_login']));
         $user->__set('ds_email',   trim($_POST['ds_email']));
-        $user->__set('ds_password', trim($_POST['ds_password']));
-        $user->__set('ds_level',   $ds_level);
+        $user->__set('ds_password', trim($_POST['ds_password']));       
         $user->__set('ds_active',  $ds_active);
         $user->__set('nr_phone',   trim($_POST['nr_phone']));
         $user->__set('ds_address', trim($_POST['ds_address']));
         $user->__set('id_position', $id_position);
+        $user->__set('id_role', $id_role);
 
         $photoPath = '/dist/img/sem-foto.jpg';
         if (!empty($_FILES['ds_photo']['name']) && $_FILES['ds_photo']['error'] === UPLOAD_ERR_OK) {
@@ -60,15 +60,15 @@ class AppController extends Action {
             'id' => $user->id,
             'nm_name' => $user->__get('nm_name'),
             'ds_email' => $user->__get('ds_email'),
-            'nr_phone' => $user->__get('nr_phone'),
-            'ds_level' => $user->__get('ds_level'),
+            'nr_phone' => $user->__get('nr_phone'),            
             'ds_active' => $user->__get('ds_active') ? 'Sim' : 'Não',
             'ds_photo' => $user->__get('ds_photo'),
-            'id_position' => $user->__get('id_position')
+            'id_position' => $user->__get('id_position'),
+            'id_role' => $user->__get('id_role')
         ];
 
         echo json_encode(['success' => true, 'user' => $userData]);
-    } 
+    }
     catch (\Exception $e) {
 
 		$errorMessage = "Erro ao cadastrar usuário.";
@@ -81,10 +81,10 @@ class AppController extends Action {
 			// Descobrir qual campo duplicou
 			if (strpos($errorTechnical, 'nm_login') !== false) {
 				$errorMessage = "Erro de cadastro: este login já está sendo utilizado.";
-			} 
+			}
 			elseif (strpos($errorTechnical, 'ds_email') !== false) {
 				$errorMessage = "Erro de cadastro: este e-mail já está cadastrado.";
-			} 
+			}
 			elseif (strpos($errorTechnical, 'ds_password') !== false) {
 				$errorMessage = "Erro de cadastro: esta senha já está cadastrado.";
 			}elseif (strpos($errorTechnical, 'nr_phone') !== false) {
@@ -96,7 +96,7 @@ class AppController extends Action {
 			'success' => false,
 			'message' => $errorMessage
 		]);
-	}	
+	}
 }
 
 	public function get_user() {
@@ -111,6 +111,14 @@ class AppController extends Action {
 			$dadosUsuario['ds_position'] = $posData['ds_description'] ?? '';
 		} else {
 			$dadosUsuario['ds_position'] = '';
+		}
+
+		if (!empty($dadosUsuario['id_role'])) {
+			$role = Container::getModel('Role');
+			$roleData = $role->getById($dadosUsuario['id_role']);
+			$dadosUsuario['ds_role'] = $roleData['ds_description'] ?? '';
+		} else {
+			$dadosUsuario['ds_role'] = '';
 		}
 
 		header('Content-Type: application/json');
@@ -141,8 +149,7 @@ class AppController extends Action {
 			$user->__set('nm_login', trim($_POST['nm_login'] ?? $existingUser['nm_login']));
 			$user->__set('ds_email', trim($_POST['ds_email'] ?? $existingUser['ds_email']));
 			$user->__set('nr_phone', trim($_POST['nr_phone'] ?? $existingUser['nr_phone']));
-			$user->__set('ds_address', trim($_POST['ds_address'] ?? $existingUser['ds_address']));
-			$user->__set('ds_level', $existingUser['ds_level'] ?? 0);
+			$user->__set('ds_address', trim($_POST['ds_address'] ?? $existingUser['ds_address']));			
 			$user->__set('ds_active', $existingUser['ds_active'] ?? 0);
 			$user->__set('id_position', $existingUser['id_position'] ?? null);
 
@@ -206,18 +213,18 @@ class AppController extends Action {
 				throw new \Exception('Usuário não encontrado.');
 			}
 
-			$ds_level  = isset($_POST['ds_level']) ? 1 : ($existingUser['ds_level'] ?? 0);
+			
 			$ds_active = isset($_POST['ds_active']) ? 1 : ($existingUser['ds_active'] ?? 0);
 			$id_position = isset($_POST['id_position']) && $_POST['id_position'] !== '' ? (int) $_POST['id_position'] : ($existingUser['id_position'] ?? null);
-
+			$id_role = isset($_POST['id_role']) && $_POST['id_role'] !== '' ? (int) $_POST['id_role'] : ($existingUser['id_role'] ?? null);
 			$user->__set('nm_name', trim($_POST['nm_name']));
 			$user->__set('nm_login', trim($_POST['nm_login']));
-			$user->__set('ds_email', trim($_POST['ds_email']));
-			$user->__set('ds_level', $ds_level);
+			$user->__set('ds_email', trim($_POST['ds_email']));			
 			$user->__set('ds_active', $ds_active);
 			$user->__set('nr_phone', trim($_POST['nr_phone']));
 			$user->__set('ds_address', trim($_POST['ds_address']));
 			$user->__set('id_position', $id_position);
+			$user->__set('id_role', $id_role);
 
 			if (!empty($_POST['ds_password'])) {
 				$user->__set('ds_password', trim($_POST['ds_password']));
@@ -357,12 +364,12 @@ class AppController extends Action {
 		$user->__set('nm_name', $existingUser['nm_name']);
 		$user->__set('nm_login', $existingUser['nm_login']);
 		$user->__set('ds_email', $existingUser['ds_email']);
-		$user->__set('ds_level', $existingUser['ds_level']);
 		$user->__set('nr_phone', $existingUser['nr_phone']);
 		$user->__set('ds_address', $existingUser['ds_address']);
 		$user->__set('ds_active', $active);
 		$user->__set('ds_photo', $existingUser['ds_photo'] ?? '/dist/img/sem-foto.jpg');
 		$user->__set('id_position', $existingUser['id_position'] ?? null);
+		$user->__set('id_role', $existingUser['id_role'] ?? null);
 		$user->update();
 		echo json_encode(['success' => true, 'active' => $active]);
 	}
@@ -825,6 +832,14 @@ class AppController extends Action {
 			}
 
 			$position = Container::getModel('Position');
+
+			$existing = $position->findByDescription($ds_description);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um cargo cadastrado com o nome "' . htmlspecialchars($ds_description) . '".']);
+				return;
+			}
+
 			$position->__set('ds_description', $ds_description);
 			$id = $position->save();
 			header('Content-Type: application/json');
@@ -832,7 +847,7 @@ class AppController extends Action {
 		} catch (\Exception $e) {
 			header('Content-Type: application/json');
 			if (strpos($e->getMessage(), '1062') !== false) {
-				echo json_encode(['success' => false, 'message' => 'Este cargo já está cadastrado.']);
+				echo json_encode(['success' => false, 'message' => 'Já existe um cargo cadastrado com este nome.']);
 			} else {
 				echo json_encode(['success' => false, 'message' => 'Erro ao salvar cargo.']);
 			}
@@ -855,7 +870,16 @@ class AppController extends Action {
 			$ds_description = trim($_POST['ds_description'] ?? '');
 			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
 			if ($ds_description === '') { echo json_encode(['success' => false, 'message' => 'A descrição do cargo é obrigatória.']); return; }
+
 			$position = Container::getModel('Position');
+
+			$existing = $position->findByDescription($ds_description);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um cargo cadastrado com o nome "' . htmlspecialchars($ds_description) . '".']);
+				return;
+			}
+
 			$position->__set('id', $id);
 			$position->__set('ds_description', $ds_description);
 			$ok = $position->update();
@@ -864,7 +888,7 @@ class AppController extends Action {
 		} catch (\Exception $e) {
 			header('Content-Type: application/json');
 			if (strpos($e->getMessage(), '1062') !== false) {
-				echo json_encode(['success' => false, 'message' => 'Este cargo já está cadastrado.']);
+				echo json_encode(['success' => false, 'message' => 'Já existe um cargo cadastrado com este nome.']);
 			} else {
 				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar cargo.']);
 			}
@@ -890,6 +914,103 @@ class AppController extends Action {
 		$positions = $position->getAllPositions();
 		header('Content-Type: application/json');
 		echo json_encode($positions ?: []);
+		exit;
+	}
+
+	// ===================== PERFIL DE ACESSO =====================
+
+	public function save_role() {
+		try {
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($ds_description === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'A descrição do perfil de acesso é obrigatória.']);
+				return;
+			}
+
+			$role = Container::getModel('Role');
+
+			$existing = $role->findByDescription($ds_description);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um perfil de acesso cadastrado com o nome "' . htmlspecialchars($ds_description) . '".']);
+				return;
+			}
+
+			$role->__set('ds_description', $ds_description);
+			$id = $role->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Perfil de acesso cadastrado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um perfil de acesso cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar perfil de acesso.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_role() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$role = Container::getModel('Role');
+		$data = $role->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_role() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_description === '') { echo json_encode(['success' => false, 'message' => 'A descrição do perfil de acesso é obrigatória.']); return; }
+
+			$role = Container::getModel('Role');
+
+			$existing = $role->findByDescription($ds_description);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um perfil de acesso cadastrado com o nome "' . htmlspecialchars($ds_description) . '".']);
+				return;
+			}
+
+			$role->__set('id', $id);
+			$role->__set('ds_description', $ds_description);
+			$ok = $role->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Perfil de acesso atualizado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um perfil de acesso cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar perfil de acesso.']);
+			}
+		}
+	}
+
+	public function delete_role() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$role = Container::getModel('Role');
+			$ok = $role->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Perfil de acesso excluído com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir perfil de acesso.']);
+		}
+	}
+
+	public function get_all_roles() {
+		$role = Container::getModel('Role');
+		$roles = $role->getAllRoles();
+		header('Content-Type: application/json');
+		echo json_encode($roles ?: []);
 		exit;
 	}
 

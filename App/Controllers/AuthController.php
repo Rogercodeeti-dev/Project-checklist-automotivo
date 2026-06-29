@@ -22,9 +22,9 @@ class AuthController extends Action {
         // Agora usando os campos corretos da tabela
         $user->__set('nm_login', trim($_POST['nm_login']));
         $user->__set('ds_password', $_POST['ds_password']);
-        
-        $auth = $user->authenticate(); 
-      
+
+        $auth = $user->authenticate();
+
         if ($auth) {
 
             // Regenera sessão (proteção contra session fixation)
@@ -32,9 +32,7 @@ class AuthController extends Action {
 
             $_SESSION['id']   = $user->__get('id');
             $_SESSION['nm_login']   = $user->__get('nm_login');
-
-            // Se quiser puxar empresa depois, pode ajustar no model
-            // $_SESSION['id_company'] = ...
+            $_SESSION['id_position'] = $user->__get('id_position');
 
             header('Location: /mainmenu');
             exit;

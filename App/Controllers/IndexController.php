@@ -22,8 +22,11 @@ class IndexController extends Action {
 		$users= $user->getAllUsers();
 		$position = Container::getModel('Position');
 		$positions = $position->getAllPositions();
+		$role = Container::getModel('Role');
+		$roles = $role->getAllRoles();
 		$this->view->user = $users;
 		$this->view->positions = $positions;
+		$this->view->roles = $roles;
 		$this->render('users');
 	}
 
@@ -122,6 +125,13 @@ class IndexController extends Action {
 		$positions = $position->getAllPositions();
 		$this->view->positions = $positions;
 		$this->render('positions');
+	}
+
+	public function listrole() {
+		$role = Container::getModel('Role');
+		$roles = $role->getAllRoles();
+		$this->view->roles = $roles;
+		$this->render('roles');
 	}
 
 	//Update module

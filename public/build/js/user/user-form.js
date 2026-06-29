@@ -29,7 +29,7 @@ $(document).ready(() => {
                     actionButtons += '<button type="button" class="btn btn-danger btn-xs btn-delete-user" data-id="' + response.user.id + '" title="Excluir usuário">' +
                                     '<span class="glyphicon glyphicon-trash"></span>' +
                                   '</button>';
-                    if (response.user.ds_level != 1) {
+                    if (response.user.id_role != 1) {
                         actionButtons += ' <button type="button" class="btn btn-default btn-xs lock-user" data-id="' + response.user.id + '" title="Gerenciar permissões">' +
                                          '<span class="glyphicon glyphicon-lock"></span>' +
                                        '</button>';
@@ -47,8 +47,7 @@ $(document).ready(() => {
                         '<td><p>' + response.user.nm_name + '</p></td>' +
                         '<td><p>' + (response.user.nr_phone || '') + '</p></td>' +
                         '<td><p>' + response.user.ds_email + '</p></td>' +
-                        '<td><p>' + positionName + '</p></td>' +
-                        '<td><p>' + (response.user.ds_level == 1 ? 'Administrador' : 'Usuário') + '</p></td>' +
+                        '<td><p>' + positionName + '</p></td>' +                      
                         '<td class="text-center"><input type="checkbox" class="toggle-active" data-id="' + response.user.id + '" checked title="Desativar usuário"></td>' +
                         '<td class="btn-actions text-center">' + actionButtons + '</td>' +
                     '</tr>';

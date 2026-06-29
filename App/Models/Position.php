@@ -27,6 +27,15 @@ class Position extends Model {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function findByDescription(string $description): ?array {
+        $query = "SELECT id, ds_description FROM tb_position WHERE ds_description = :ds_description LIMIT 1";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':ds_description', $description, \PDO::PARAM_STR);
+        $stmt->execute();
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
     public function getById($id) {
         $query = "SELECT * FROM tb_position WHERE id = :id LIMIT 1";
         $stmt = $this->db->prepare($query);

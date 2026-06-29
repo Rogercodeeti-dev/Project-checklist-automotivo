@@ -35,17 +35,16 @@ class Connection {
     $passwordHash = password_hash("123456", PASSWORD_DEFAULT);
 
     $sql = "INSERT INTO tb_user
-            (nm_name, nm_login, ds_email, ds_password, ds_level, ds_active, ds_photo, dt_date)
+            (nm_name, nm_login, ds_email, ds_password, ds_active, ds_photo, dt_date)
             VALUES
-            (:name, :login, :email, :password, :level, :active, :photo, NOW())";
+            (:name, :login, :email, :password, :active, :photo, NOW())";
 
     $stmt = $db->prepare($sql);
     $stmt->execute([
         ':name' => 'Administrador',
         ':login' => 'admin',
         ':email' => 'admin@admin.com',
-        ':password' => $passwordHash,
-        ':level' => 1,
+        ':password' => $passwordHash,        
         ':active' => 1,
         ':photo' => '/dist/img/sem-foto.jpg'
     ]);

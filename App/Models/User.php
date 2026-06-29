@@ -13,17 +13,15 @@ class User extends Model{
     protected ?string $ds_email = null;
     protected ?string $ds_password = null;
     protected ?string $ds_password_crip = null;
-
-    protected ?bool $ds_level = null;   // nível/perfil do usuário
+    
     protected ?bool $ds_active = null;    // ativo/inativo (0 ou 1)
 
     protected ?string $nr_phone = null;
     protected ?string $ds_address = null;
     protected ?string $ds_photo = null;
     protected ?int $id_position = null;
-
+    protected ?int $id_role = null;
     protected ?string $dt_date = null;    // data de cadastro (pode virar DateTime depois)
-
 
 	public function __get($atributo) {
 		return $this->$atributo;
@@ -32,7 +30,7 @@ class User extends Model{
 	public function __set($atributo, $valor) {
 		$this->$atributo = $valor;
 	}
-    
+   
 
 	// =========================
 	// SALVAR
@@ -44,13 +42,13 @@ class User extends Model{
         nm_name,
         nm_login,
         ds_email,
-        ds_password,
-        ds_level,
+        ds_password,      
         ds_active,
         nr_phone,
         ds_address,
         ds_photo,
         id_position,
+        id_role,
         dt_date
     )
     VALUES
@@ -58,13 +56,13 @@ class User extends Model{
         :nm_name,
         :nm_login,
         :ds_email,
-        :ds_password,
-        :ds_level,
+        :ds_password,       
         :ds_active,
         :nr_phone,
         :ds_address,
         :ds_photo,
         :id_position,
+        :id_role,
         NOW()
     )";
 
@@ -81,11 +79,6 @@ class User extends Model{
         password_hash($this->__get('ds_password'), PASSWORD_DEFAULT)
     );
 
-
-
-    // nível do usuário (ex: admin = 1, usuário comum = 0)
-    $stmt->bindValue(':ds_level', $this->__get('ds_level') ?? 0);
-
     // ativo/inativo (default = ativo)
     $stmt->bindValue(':ds_active', $this->__get('ds_active') ?? 1);
 
@@ -94,6 +87,7 @@ class User extends Model{
     $stmt->bindValue(':ds_address', $this->__get('ds_address'));
     $stmt->bindValue(':ds_photo', $this->__get('ds_photo') ?? '/dist/img/sem-foto.jpg');
     $stmt->bindValue(':id_position', $this->__get('id_position') ?: null, \PDO::PARAM_INT);
+    $stmt->bindValue(':id_role', $this->__get('id_role') ?: null, \PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -112,34 +106,34 @@ class User extends Model{
     $query = "UPDATE tb_user SET
                 nm_name        = :nm_name,
                 nm_login       = :nm_login,
-                ds_email       = :ds_email,
-                ds_level       = :ds_level,
+                ds_email       = :ds_email,              
                 ds_active      = :ds_active,
                 nr_phone       = :nr_phone,
                 ds_address     = :ds_address,
                 ds_photo       = :ds_photo,
-                id_position    = :id_position
+                id_position    = :id_position,
+                id_role        = :id_role
               WHERE id = :id";
 
     $stmt = $this->db->prepare($query);
 
     $stmt->bindValue(':nm_name', $this->__get('nm_name'));
     $stmt->bindValue(':nm_login', $this->__get('nm_login'));
-    $stmt->bindValue(':ds_email', $this->__get('ds_email'));
-    $stmt->bindValue(':ds_level', $this->__get('ds_level'));
+    $stmt->bindValue(':ds_email', $this->__get('ds_email'));    
     $stmt->bindValue(':ds_active', $this->__get('ds_active'));
     $stmt->bindValue(':nr_phone', $this->__get('nr_phone'));
     $stmt->bindValue(':ds_address', $this->__get('ds_address'));
     $stmt->bindValue(':ds_photo', $this->__get('ds_photo') ?? '/dist/img/sem-foto.jpg');
     $stmt->bindValue(':id_position', $this->__get('id_position') ?: null, \PDO::PARAM_INT);
+    $stmt->bindValue(':id_role', $this->__get('id_role') ?: null, \PDO::PARAM_INT);
     $stmt->bindValue(':id', $this->__get('id'));
 
     $stmt->execute();
 
     // 🔐 Atualiza senha somente se foi enviada
     if ($this->__get('ds_password')) {
-        $queryPass = "UPDATE tb_user 
-                      SET ds_password = :ds_password 
+        $queryPass = "UPDATE tb_user
+                      SET ds_password = :ds_password
                       WHERE id = :id";
 
         $stmt = $this->db->prepare($queryPass);
@@ -200,14 +194,16 @@ class User extends Model{
 					u.nm_name,
 					u.nm_login,
 					u.ds_email,
-				u.nr_phone,
-				u.ds_level,
+				u.nr_phone,				
 				u.ds_active,
 				u.ds_photo,
 				u.id_position,
-				p.ds_description AS ds_position
+				p.ds_description AS ds_position,
+				u.id_role,
+				r.ds_description AS ds_role
 			  FROM tb_user u
-			  LEFT JOIN tb_position p ON p.id = u.id_position";
+			  LEFT JOIN tb_position p ON p.id = u.id_position
+			  LEFT JOIN tb_role r ON r.id = u.id_role";
 
 		$stmt = $this->db->prepare($query);
 		$stmt->execute();
@@ -260,7 +256,7 @@ class User extends Model{
         return false;
     }
 
-    $query = "SELECT id, nm_login, ds_password
+    $query = "SELECT id, nm_login, ds_password, id_position
               FROM tb_user
               WHERE nm_login = :nm_login
               LIMIT 1";
@@ -284,6 +280,7 @@ class User extends Model{
     // sucesso → salva dados no objeto
     $this->__set('id', $user['id']);
     $this->__set('nm_login', $user['nm_login']);
+    $this->__set('id_position', $user['id_position'] ?? null);
 
     return true;
 }
