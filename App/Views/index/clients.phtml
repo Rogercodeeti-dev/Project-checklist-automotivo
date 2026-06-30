@@ -61,7 +61,7 @@
 
   <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
   <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
-  <script src="/js/clients.js"></script>
+  <script src="/modules/clients.js"></script>
 
   <!-- ==================== MODAL CADASTRO ==================== -->
   <div class="modal fade" id="modalRegClient" tabindex="-1" role="dialog">
@@ -132,7 +132,7 @@
               </div>
               <div class="col-sm-2 form-group">
                 <label>Número</label>
-                <input type="text" id="nr_address" class="form-control">
+                <input type="text" id="nr_address" name="nr_address" class="form-control">
               </div>
             </div>
             <div class="row">
@@ -241,6 +241,28 @@
               <div class="col-sm-3 form-group">
                 <label>CEP</label>
                 <input type="text" id="edit_nr_zipcode" name="nr_zipcode" class="form-control" placeholder="00000-000" maxlength="9">
+              </div>
+              <div class="col-sm-7 form-group">
+                <label>Rua</label>
+                <input type="text" id="edit_ds_street" class="form-control" disabled>
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Número</label>
+                <input type="text" id="edit_nr_address" name="nr_address" class="form-control">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label>Bairro</label>
+                <input type="text" id="edit_ds_neighborhood" class="form-control" disabled>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label>Cidade</label>
+                <input type="text" id="edit_nm_city" class="form-control" disabled>
+              </div>
+              <div class="col-sm-2 form-group">
+                <label>Estado</label>
+                <input type="text" id="edit_sg_state" class="form-control" maxlength="2" disabled>
               </div>
             </div>
           </form>

@@ -17,6 +17,7 @@ class Client extends Model {
     protected ?string $nr_cellphone = null;
     protected ?string $ds_email = null;
     protected ?string $nr_zipcode = null;
+    protected ?string $nr_address = null;
     protected ?string $dt_register = null;
 
     public function __get($atributo) {
@@ -38,7 +39,7 @@ class Client extends Model {
     }
 
     public function getById($id) {
-        $query = "SELECT * FROM tb_client WHERE id_client = :id LIMIT 1";
+        $query = "SELECT id_client, tp_person, nr_cpf, nr_cnpj, nm_client, nm_socialreazon, nm_fantasy, nr_phone, nr_cellphone, ds_email, nr_zipcode, nr_address, dt_register FROM tb_client WHERE id_client = :id LIMIT 1";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':id', (int)$id, \PDO::PARAM_INT);
         $stmt->execute();
@@ -46,8 +47,8 @@ class Client extends Model {
     }
 
     public function save() {
-        $query = "INSERT INTO tb_client (tp_person, nr_cpf, nr_cnpj, nm_client, nm_socialreazon, nm_fantasy, nr_phone, nr_cellphone, ds_email, nr_zipcode, dt_register)
-        VALUES (:tp_person, :nr_cpf, :nr_cnpj, :nm_client, :nm_socialreazon, :nm_fantasy, :nr_phone, :nr_cellphone, :ds_email, :nr_zipcode, NOW())";
+        $query = "INSERT INTO tb_client (tp_person, nr_cpf, nr_cnpj, nm_client, nm_socialreazon, nm_fantasy, nr_phone, nr_cellphone, ds_email, nr_zipcode, nr_address, dt_register)
+        VALUES (:tp_person, :nr_cpf, :nr_cnpj, :nm_client, :nm_socialreazon, :nm_fantasy, :nr_phone, :nr_cellphone, :ds_email, :nr_zipcode, :nr_address, NOW())";
 
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':tp_person', (string) $this->__get('tp_person'), \PDO::PARAM_STR);
@@ -60,34 +61,17 @@ class Client extends Model {
         $stmt->bindValue(':nr_cellphone', $this->__get('nr_cellphone') ?: null, \PDO::PARAM_STR);
         $stmt->bindValue(':ds_email', $this->__get('ds_email') ?: null, \PDO::PARAM_STR);
         $stmt->bindValue(':nr_zipcode', $this->__get('nr_zipcode') ?: null, \PDO::PARAM_STR);
-
-        // Debug temporário
-        file_put_contents(
-            dirname(__DIR__, 2) . '/tmp_debug.log',
-            date('H:i:s') . ' MODEL tp_person=[' . $this->__get('tp_person') . '] nm_client=[' . $this->__get('nm_client') . ']' . PHP_EOL,
-            FILE_APPEND
-        );
+        $stmt->bindValue(':nr_address', $this->__get('nr_address') ?: null, \PDO::PARAM_STR);
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
             throw new \PDOException($err[2] ?? 'Erro desconhecido ao inserir cliente', (int)$err[0]);
         }
-        $lastId = $this->db->lastInsertId();
-
-        // Debug: verificar o que foi gravado
-        $check = $this->db->query("SELECT tp_person FROM tb_client WHERE id_client = " . (int)$lastId);
-        $row = $check->fetch(\PDO::FETCH_ASSOC);
-        file_put_contents(
-            dirname(__DIR__, 2) . '/tmp_debug.log',
-            date('H:i:s') . ' AFTER_INSERT id=[' . $lastId . '] tp_person_no_banco=[' . ($row['tp_person'] ?? 'NULL') . ']' . PHP_EOL,
-            FILE_APPEND
-        );
-
-        return $lastId;
+        return $this->db->lastInsertId();
     }
 
     public function update() {
-        $query = "UPDATE tb_client SET tp_person = :tp_person, nr_cpf = :nr_cpf, nr_cnpj = :nr_cnpj, nm_client = :nm_client, nm_socialreazon = :nm_socialreazon, nm_fantasy = :nm_fantasy, nr_phone = :nr_phone, nr_cellphone = :nr_cellphone, ds_email = :ds_email, nr_zipcode = :nr_zipcode WHERE id_client = :id_client";
+        $query = "UPDATE tb_client SET tp_person = :tp_person, nr_cpf = :nr_cpf, nr_cnpj = :nr_cnpj, nm_client = :nm_client, nm_socialreazon = :nm_socialreazon, nm_fantasy = :nm_fantasy, nr_phone = :nr_phone, nr_cellphone = :nr_cellphone, ds_email = :ds_email, nr_zipcode = :nr_zipcode, nr_address = :nr_address WHERE id_client = :id_client";
 
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':tp_person', (string) $this->__get('tp_person'), \PDO::PARAM_STR);
@@ -100,6 +84,7 @@ class Client extends Model {
         $stmt->bindValue(':nr_cellphone', $this->__get('nr_cellphone') ?: null, \PDO::PARAM_STR);
         $stmt->bindValue(':ds_email', $this->__get('ds_email') ?: null, \PDO::PARAM_STR);
         $stmt->bindValue(':nr_zipcode', $this->__get('nr_zipcode') ?: null, \PDO::PARAM_STR);
+        $stmt->bindValue(':nr_address', $this->__get('nr_address') ?: null, \PDO::PARAM_STR);
         $stmt->bindValue(':id_client', (int) $this->__get('id_client'), \PDO::PARAM_INT);
 
         return $stmt->execute();

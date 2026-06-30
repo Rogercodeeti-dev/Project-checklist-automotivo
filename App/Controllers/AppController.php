@@ -535,6 +535,7 @@ class AppController extends Action {
 			$client->__set('nr_cellphone', trim($_POST['nr_cellphone'] ?? ''));
 			$client->__set('ds_email', trim($_POST['ds_email'] ?? ''));
 			$client->__set('nr_zipcode', trim($_POST['nr_zipcode'] ?? ''));
+			$client->__set('nr_address', trim($_POST['nr_address'] ?? ''));
 
 			$client->save();
 			header('Content-Type: application/json');
@@ -593,6 +594,7 @@ class AppController extends Action {
 			$client->__set('nr_cellphone', trim($_POST['nr_cellphone'] ?? ''));
 			$client->__set('ds_email', trim($_POST['ds_email'] ?? ''));
 			$client->__set('nr_zipcode', trim($_POST['nr_zipcode'] ?? ''));
+			$client->__set('nr_address', trim($_POST['nr_address'] ?? ''));
 
 			$ok = $client->update();
 			header('Content-Type: application/json');
