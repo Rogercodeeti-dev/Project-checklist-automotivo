@@ -332,6 +332,43 @@ class Route extends Bootstrap {
 			'action' => 'get_all_typevehicles'
 		);
 
+		//Permissões
+		$routes['save_permission'] = array(
+			'route' => '/save_permission',
+			'controller' => 'AppController',
+			'action' => 'save_permission'
+		);
+
+		$routes['get_permission'] = array(
+			'route' => '/get_permission',
+			'controller' => 'AppController',
+			'action' => 'get_permission'
+		);
+
+		$routes['update_permission'] = array(
+			'route' => '/update_permission',
+			'controller' => 'AppController',
+			'action' => 'update_permission'
+		);
+
+		$routes['delete_permission'] = array(
+			'route' => '/delete_permission',
+			'controller' => 'AppController',
+			'action' => 'delete_permission'
+		);
+
+		$routes['get_all_permissions'] = array(
+			'route' => '/get_all_permissions',
+			'controller' => 'AppController',
+			'action' => 'get_all_permissions'
+		);
+
+		$routes['get_permissions_grouped'] = array(
+			'route' => '/get_permissions_grouped',
+			'controller' => 'AppController',
+			'action' => 'get_permissions_grouped'
+		);
+
 		$this->setRoutes($routes);
 	}
 

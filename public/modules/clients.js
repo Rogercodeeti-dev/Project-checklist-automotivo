@@ -70,8 +70,28 @@ $(function() {
     FormUtils.clearFieldError($('#nr_cnpj'));
   }
 
-  $('input[name="tp_person"]').on('change', function() {
+  function toggleEditPersonFields(type) {
+    if (type === 'PJ') {
+      $('#edit-field-cpf').hide();
+      $('#edit-field-cnpj').show();
+      $('#formEditClient input[name="nm_socialreazon"]').prop('disabled', false);
+      $('#formEditClient input[name="nm_fantasy"]').prop('disabled', false);
+    } else {
+      $('#edit-field-cpf').show();
+      $('#edit-field-cnpj').hide();
+      $('#formEditClient input[name="nm_socialreazon"]').prop('disabled', true).val('');
+      $('#formEditClient input[name="nm_fantasy"]').prop('disabled', true).val('');
+    }
+    FormUtils.clearFieldError($('#edit_nr_cpf'));
+    FormUtils.clearFieldError($('#edit_nr_cnpj'));
+  }
+
+  $('#modalRegClient input[name="tp_person"]').on('change', function() {
     togglePersonFields($(this).val());
+  });
+
+  $('#modalEditClient input[name="tp_person"]').on('change', function() {
+    toggleEditPersonFields($(this).val());
   });
 
   $('#modalRegClient').on('shown.bs.modal', function() {
@@ -94,7 +114,7 @@ $(function() {
     FormUtils.clearFieldError($('#nr_cpf'));
     FormUtils.clearFieldError($('#nr_cnpj'));
 
-    if (personType === 'F') {
+    if (personType === 'PF') {
       var cpf = $('#nr_cpf').val().trim();
       if (cpf !== '' && !Validadores.cpf(cpf)) {
         FormUtils.showFieldError($('#nr_cpf'), 'CPF inválido. Informe um CPF válido.');
@@ -147,17 +167,12 @@ $(function() {
       $('#edit_nr_address').val(data.nr_address || '');
 
       // Define tipo de pessoa
-      var tpPersonValue = data.tp_person === 'J' ? 'PJ' : 'PF';
+
+      var tpPersonValue = data.tp_person === 'PJ' ? 'PJ' : 'PF';
       $('#modalEditClient input[name="tp_person"][value="' + tpPersonValue + '"]').prop('checked', true);
 
       // Mostra/esconde campos conforme tipo
-      if (tpPersonValue === 'PJ') {
-        $('#edit-field-cpf').hide();
-        $('#edit-field-cnpj').show();
-      } else {
-        $('#edit-field-cpf').show();
-        $('#edit-field-cnpj').hide();
-      }
+      toggleEditPersonFields(tpPersonValue);
 
       // Preenche todos os campos
       $('#edit_nr_cpf').val(data.nr_cpf || '');
@@ -189,7 +204,7 @@ $(function() {
     FormUtils.clearFieldError($('#edit_nr_cpf'));
     FormUtils.clearFieldError($('#edit_nr_cnpj'));
 
-    if (personType === 'F') {
+    if (personType === 'PF') {
       var cpf = $('#edit_nr_cpf').val().trim();
       if (cpf !== '' && !Validadores.cpf(cpf)) {
         FormUtils.showFieldError($('#edit_nr_cpf'), 'CPF inválido. Informe um CPF válido.');

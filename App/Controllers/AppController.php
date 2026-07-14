@@ -584,7 +584,7 @@ class AppController extends Action {
 
 			$client = Container::getModel('Client');
 			$client->__set('id_client', $id);
-			$client->__set('tp_person', (trim($_POST['tp_person'] ?? 'PF') === 'PJ') ? 'J' : 'F');
+			$client->__set('tp_person', (trim($_POST['tp_person'] ?? 'PF') === 'PJ') ? 'PJ' : 'PF');
 			$client->__set('nr_cpf', trim($_POST['nr_cpf'] ?? ''));
 			$client->__set('nr_cnpj', trim($_POST['nr_cnpj'] ?? ''));
 			$client->__set('nm_client', $nm_client);
@@ -1037,6 +1037,121 @@ class AppController extends Action {
 		$typevehicles = $typevehicle->getAllTypeVehicles();
 		header('Content-Type: application/json');
 		echo json_encode($typevehicles ?: []);
+		exit;
+	}
+
+	// ===================== PERMISSÕES =====================
+
+	public function save_permission() {
+		try {
+			$ds_module = trim($_POST['ds_module'] ?? '');
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($ds_module === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'O nome do módulo é obrigatório.']);
+				return;
+			}
+			if ($ds_description === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'A descrição da permissão é obrigatória.']);
+				return;
+			}
+
+			$permission = Container::getModel('Permission');
+
+			$existing = $permission->findByModuleAndDescription($ds_module, $ds_description);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Esta permissão já está cadastrada para este módulo.']);
+				return;
+			}
+
+			$permission->__set('ds_module', $ds_module);
+			$permission->__set('ds_description', $ds_description);
+			$id = $permission->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Permissão cadastrada com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Esta permissão já está cadastrada para este módulo.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar permissão.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_permission() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$permission = Container::getModel('Permission');
+		$data = $permission->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_permission() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_module = trim($_POST['ds_module'] ?? '');
+			$ds_description = trim($_POST['ds_description'] ?? '');
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_module === '') { echo json_encode(['success' => false, 'message' => 'O nome do módulo é obrigatório.']); return; }
+			if ($ds_description === '') { echo json_encode(['success' => false, 'message' => 'A descrição da permissão é obrigatória.']); return; }
+
+			$permission = Container::getModel('Permission');
+
+			$existing = $permission->findByModuleAndDescription($ds_module, $ds_description);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Esta permissão já está cadastrada para este módulo.']);
+				return;
+			}
+
+			$permission->__set('id', $id);
+			$permission->__set('ds_module', $ds_module);
+			$permission->__set('ds_description', $ds_description);
+			$ok = $permission->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Permissão atualizada com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Esta permissão já está cadastrada para este módulo.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar permissão.']);
+			}
+		}
+	}
+
+	public function delete_permission() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$permission = Container::getModel('Permission');
+			$ok = $permission->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Permissão excluída com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir permissão.']);
+		}
+	}
+
+	public function get_all_permissions() {
+		$permission = Container::getModel('Permission');
+		$permissions = $permission->getAllPermissions();
+		header('Content-Type: application/json');
+		echo json_encode($permissions ?: []);
+		exit;
+	}
+
+	public function get_permissions_grouped() {
+		$permission = Container::getModel('Permission');
+		$grouped = $permission->getPermissionsGroupedByModule();
+		header('Content-Type: application/json');
+		echo json_encode($grouped ?: []);
 		exit;
 	}
 }

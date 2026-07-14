@@ -243,6 +243,16 @@ function settingImagePath($value) {
             <li><a href="#" data-toggle="modal" data-target="#configModal"><i class="fa fa-wrench"></i> Configurações</a></li>
           </ul>
         </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-code"></i> <span>Desenvolvedor</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-left"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="#" id="menuPermissions"><i class="fa fa-key"></i> Permissões</a></li>
+          </ul>
+        </li>
       </ul>
       <!-- /.sidebar-menu -->
     </section>
@@ -418,6 +428,81 @@ function settingImagePath($value) {
       </div>
     </div>
   </div>
+
+  <!-- Modal de Permissões -->
+  <div class="modal fade" id="modalPermissions" tabindex="-1" role="dialog" aria-labelledby="modalPermissionsLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="modalPermissionsLabel"><i class="fa fa-key"></i> Gerenciar Permissões</h4>
+        </div>
+        <div class="modal-body">
+          <div id="permissionAlert" class="alert" style="display:none;"></div>
+          <form id="formPermission" action="/save_permission" method="post">
+            <input type="hidden" id="edit_permission_id" name="edit_id" value="">
+            <div class="row">
+              <div class="col-sm-5 form-group">
+                <label for="perm_ds_module">Módulo</label>
+                <input type="text" name="ds_module" id="perm_ds_module" class="form-control" list="modulesList" placeholder="Ex: Clientes" required>
+                <datalist id="modulesList"></datalist>
+              </div>
+              <div class="col-sm-5 form-group">
+                <label for="perm_ds_description">Permissão</label>
+                <input type="text" name="ds_description" id="perm_ds_description" class="form-control" placeholder="Ex: Incluir" required>
+              </div>
+              <div class="col-sm-2 form-group" style="padding-top:25px;">
+                <button type="button" id="btnSavePermission" class="btn btn-primary btn-block">Salvar</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12">
+                <button type="button" id="btnCancelEdit" class="btn btn-default btn-sm" style="display:none;">Cancelar Edição</button>
+              </div>
+            </div>
+          </form>
+          <hr>
+          <div style="max-height:350px; overflow-y:auto;">
+            <table id="tbpermissions" class="table table-bordered table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Módulo</th>
+                  <th>Permissão</th>
+                  <th class="text-center" style="width:100px;">Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmar Exclusão de Permissão -->
+  <div class="modal fade" id="modalExcluirPermission" tabindex="-1" role="dialog" aria-labelledby="confirmDeletePermissionLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeletePermissionLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir esta permissão?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeletePermissionBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/modules/permissions.js"></script>
+
   <script>
     jQuery(function($) {
       function showMessage(element, type, message) {
