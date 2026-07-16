@@ -822,6 +822,103 @@ class AppController extends Action {
 		}
 	}
 
+	// ===================== SERVIÇO =====================
+
+	public function save_service() {
+		try {
+			$ds_service = trim($_POST['ds_service'] ?? '');
+			if ($ds_service === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'A descrição do serviço é obrigatória.']);
+				return;
+			}
+
+			$service = Container::getModel('Service');
+
+			$existing = $service->findByService($ds_service);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um serviço cadastrado com o nome "' . htmlspecialchars($ds_service) . '".']);
+				return;
+			}
+
+			$service->__set('ds_service', $ds_service);
+			$id = $service->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Serviço cadastrado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um serviço cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar serviço.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_service() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$service = Container::getModel('Service');
+		$data = $service->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_service() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_service = trim($_POST['ds_service'] ?? '');
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_service === '') { echo json_encode(['success' => false, 'message' => 'A descrição do serviço é obrigatória.']); return; }
+
+			$service = Container::getModel('Service');
+
+			$existing = $service->findByService($ds_service);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um serviço cadastrado com o nome "' . htmlspecialchars($ds_service) . '".']);
+				return;
+			}
+
+			$service->__set('id', $id);
+			$service->__set('ds_service', $ds_service);
+			$ok = $service->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Serviço atualizado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um serviço cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar serviço.']);
+			}
+		}
+	}
+
+	public function delete_service() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$service = Container::getModel('Service');
+			$ok = $service->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Serviço excluído com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir serviço.']);
+		}
+	}
+
+	public function get_all_services() {
+		$service = Container::getModel('Service');
+		$services = $service->getAllServices();
+		header('Content-Type: application/json');
+		echo json_encode($services ?: []);
+		exit;
+	}
+
 	// ===================== CARGO =====================
 
 	public function save_position() {

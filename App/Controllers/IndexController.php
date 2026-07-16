@@ -120,6 +120,13 @@ class IndexController extends Action {
 		$this->render('vehicles');
 	}
 
+	public function listservice() {
+		$service = Container::getModel('Service');
+		$services = $service->getAllServices();
+		$this->view->services = $services;
+		$this->render('services');
+	}
+
 	public function listposition() {
 		$position = Container::getModel('Position');
 		$positions = $position->getAllPositions();

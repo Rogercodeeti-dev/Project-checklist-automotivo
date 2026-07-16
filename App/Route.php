@@ -209,6 +209,43 @@ class Route extends Bootstrap {
 			'action' => 'delete_typevehicle'
 		);
 
+		//Serviço
+		$routes['listservice'] = array(
+			'route' => '/listservice',
+			'controller' => 'IndexController',
+			'action' => 'listservice'
+		);
+
+		$routes['save_service'] = array(
+			'route' => '/save_service',
+			'controller' => 'AppController',
+			'action' => 'save_service'
+		);
+
+		$routes['get_service'] = array(
+			'route' => '/get_service',
+			'controller' => 'AppController',
+			'action' => 'get_service'
+		);
+
+		$routes['update_service'] = array(
+			'route' => '/update_service',
+			'controller' => 'AppController',
+			'action' => 'update_service'
+		);
+
+		$routes['delete_service'] = array(
+			'route' => '/delete_service',
+			'controller' => 'AppController',
+			'action' => 'delete_service'
+		);
+
+		$routes['get_all_services'] = array(
+			'route' => '/get_all_services',
+			'controller' => 'AppController',
+			'action' => 'get_all_services'
+		);
+
 		//Cargo
 		$routes['listposition'] = array(
 			'route' => '/listposition',
