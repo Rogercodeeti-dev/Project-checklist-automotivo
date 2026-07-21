@@ -34,6 +34,25 @@ class Route extends Bootstrap {
 			'action' => 'mainmenu'
 		);
 
+		//Checklist
+		$routes['newchecklist'] = array(
+			'route' => '/newchecklist',
+			'controller' => 'IndexController',
+			'action' => 'newchecklist'
+		);
+
+		$routes['checklistprogress'] = array(
+			'route' => '/checklistprogress',
+			'controller' => 'IndexController',
+			'action' => 'checklistprogress'
+		);
+
+		$routes['checklistfinished'] = array(
+			'route' => '/checklistfinished',
+			'controller' => 'IndexController',
+			'action' => 'checklistfinished'
+		);
+
 		//Listagem de usuários
 		$routes['listuser'] = array(
 			'route' => '/listuser',

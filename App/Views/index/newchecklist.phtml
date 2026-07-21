@@ -1,0 +1,1274 @@
+  <div class="">
+    <section class="content-header">
+      <h1>Novo Checklist</h1>
+    </section>
+
+    <section class="content">
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">Criar Novo Checklist</h3>
+        </div>
+        <div class="box-body">
+          <!-- Wizard Steps -->
+          <div class="wizard-steps">
+            <ul class="nav nav-pills nav-justified">
+              <li class="active" data-step="1">
+                <a href="#">
+                  <span class="badge">1</span> Dados do Atendimento
+                </a>
+              </li>
+              <li data-step="2">
+                <a href="#">
+                  <span class="badge">2</span> Dados do Veículo
+                </a>
+              </li>
+              <li data-step="3">
+                <a href="#">
+                  <span class="badge">3</span> Registro Visual
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <hr>
+
+          <!-- Step 1: Dados do Atendimento -->
+          <div id="step1" class="wizard-step-content">
+            <form id="formChecklistStep1">
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Data do Atendimento</label>
+                    <input type="date" name="dt_service" id="dt_service" class="form-control" readonly>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label>Hora do Atendimento</label>
+                    <input type="time" name="hr_service" id="hr_service" class="form-control" readonly>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Cliente</label>
+                    <input type="text" name="nm_client" class="form-control" placeholder="Nome do cliente" required>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="text" name="nr_phone" class="form-control" placeholder="(00) 00000-0000">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="ds_email" class="form-control" placeholder="email@exemplo.com">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Relato do Cliente</label>
+                    <textarea name="ds_report" class="form-control" rows="4" placeholder="Descreva o relato do cliente..." required></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group text-right">
+                <button type="button" class="btn btn-primary btn-next" data-step="1">
+                  Próximo <i class="fa fa-arrow-right"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 2: Dados do Veículo -->
+          <div id="step2" class="wizard-step-content" style="display: none;">
+            <form id="formChecklistStep2">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Placa do Veículo</label>
+                    <input type="text" name="nr_plate" class="form-control" placeholder="ABC-1234" required>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label>Veículo</label>
+                    <input type="text" name="nm_vehicle" class="form-control" placeholder="Modelo do veículo" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Cor</label>
+                    <input type="text" name="ds_color" class="form-control" placeholder="Cor do veículo">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Ano</label>
+                    <input type="text" name="nr_year" class="form-control" placeholder="Ano do veículo">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Quilometragem</label>
+                    <input type="text" name="nr_km" class="form-control" placeholder="Quilometragem atual">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Nível de Combustível</label>
+                    <div class="fuel-gauge-container">
+                      <div class="fuel-gauge">
+                        <div class="fuel-gauge-fill" id="fuelGaugeFill"></div>
+                        <div class="fuel-gauge-icons">
+                          <i class="fa fa-battery-empty"></i>
+                          <i class="fa fa-battery-quarter"></i>
+                          <i class="fa fa-battery-half"></i>
+                          <i class="fa fa-battery-three-quarters"></i>
+                          <i class="fa fa-battery-full"></i>
+                        </div>
+                      </div>
+                      <input type="range" name="nr_fuel" id="fuelSlider" min="0" max="100" value="50" class="fuel-slider">
+                      <div class="fuel-percentage" id="fuelPercentage">50%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <button type="button" class="btn btn-default btn-prev" data-step="2">
+                  <i class="fa fa-arrow-left"></i> Voltar
+                </button>
+                <button type="button" class="btn btn-primary btn-next pull-right" data-step="2">
+                  Próximo <i class="fa fa-arrow-right"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 3: Registro Visual -->
+          <div id="step3" class="wizard-step-content" style="display: none;">
+            <div class="row">
+              <!-- Seção de Fotos -->
+              <div class="col-md-6">
+                <div class="box box-success">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-camera"></i> Fotos</h3>
+                  </div>
+                  <div class="box-body">
+                    <div class="text-center">
+                      <video id="cameraPreview" class="camera-preview" autoplay playsinline></video>
+                      <canvas id="photoCanvas" style="display: none;"></canvas>
+                      <div class="btn-group" style="margin-top: 15px;">
+                        <button type="button" class="btn btn-success btn-lg" id="btnCapturePhoto" disabled>
+                          <i class="fa fa-camera"></i> Capturar Foto
+                        </button>
+                        <button type="button" class="btn btn-default" id="btnToggleCamera">
+                          <i class="fa fa-refresh"></i> Trocar Câmera
+                        </button>
+                      </div>
+                    </div>
+
+                    <div id="photosContainer" class="media-cards-container" style="margin-top: 20px;">
+                      <!-- Cards de fotos serão inseridos aqui -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Seção de Vídeos -->
+              <div class="col-md-6">
+                <div class="box box-info">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-video-camera"></i> Vídeos</h3>
+                  </div>
+                  <div class="box-body">
+                    <div class="text-center">
+                      <video id="videoPreview" class="camera-preview" autoplay playsinline></video>
+                      <div class="btn-group" style="margin-top: 15px;">
+                        <button type="button" class="btn btn-danger btn-lg" id="btnStartRecording" disabled>
+                          <i class="fa fa-circle"></i> Iniciar Gravação
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" id="btnStopRecording" disabled>
+                          <i class="fa fa-stop"></i> Parar Gravação
+                        </button>
+                      </div>
+                      <div id="recordingTimer" class="recording-timer" style="display: none;">
+                        <i class="fa fa-circle text-danger blink"></i> Gravando: <span id="timerDisplay">00:00</span>
+                      </div>
+                    </div>
+
+                    <div id="videosContainer" class="media-cards-container" style="margin-top: 20px;">
+                      <!-- Cards de vídeos serão inseridos aqui -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+              <button type="button" class="btn btn-default btn-prev" data-step="3">
+                <i class="fa fa-arrow-left"></i> Voltar
+              </button>
+              <button type="button" class="btn btn-success btn-save-checklist pull-right">
+                <i class="fa fa-save"></i> Salvar Checklist
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal de Validação -->
+  <div class="modal fade" id="modalValidation" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Campos Obrigatórios</h4>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span id="validationMessage">Por favor, preencha todos os campos obrigatórios.</span>
+          </div>
+          <ul id="validationList" class="list-group">
+            <!-- Lista de campos faltantes será inserida aqui -->
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Preview de Mídia -->
+  <div class="modal fade" id="modalMediaPreview" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="mediaPreviewTitle">Preview</h4>
+        </div>
+        <div class="modal-body text-center">
+          <div id="mediaPreviewContent"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="modalConfirmDelete" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-confirm-delete" role="document">
+      <div class="modal-content">
+        <div class="modal-header modal-header-danger">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body text-center">
+          <div class="confirm-icon-container">
+            <i class="fa fa-trash confirm-trash-icon"></i>
+          </div>
+          <p class="confirm-message" id="deleteMessage">Tem certeza que deseja excluir esta mídia?</p>
+          <p class="confirm-item-name" id="deleteItemName"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-cancel-delete" data-dismiss="modal">
+            <i class="fa fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-danger btn-confirm-delete" id="btnConfirmDelete">
+            <i class="fa fa-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .fuel-gauge-container {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .fuel-gauge {
+      position: relative;
+      width: 100%;
+      height: 40px;
+      background: #e0e0e0;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .fuel-gauge-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 50%;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+      border-radius: 20px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .fuel-gauge-icons {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      color: #333;
+      font-size: 16px;
+      z-index: 1;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+    }
+
+    .fuel-slider {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .fuel-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #007bff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fuel-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #007bff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fuel-percentage {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    /* Cores baseadas no nível */
+    .fuel-danger {
+      background: linear-gradient(90deg, #ff0000, #ff4444) !important;
+    }
+
+    .fuel-warning {
+      background: linear-gradient(90deg, #ff8c00, #ffa500) !important;
+    }
+
+    .fuel-caution {
+      background: linear-gradient(90deg, #ffd700, #ffed4a) !important;
+    }
+
+    .fuel-success {
+      background: linear-gradient(90deg, #28a745, #20c997) !important;
+    }
+
+    /* Estilos para Registro Visual */
+    .camera-preview {
+      width: 100%;
+      max-width: 400px;
+      height: 300px;
+      background: #000;
+      border-radius: 8px;
+      border: 3px solid #333;
+      object-fit: cover;
+    }
+
+    .media-cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .media-card {
+      width: calc(50% - 10px);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .media-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .media-card-preview {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .media-card-video {
+      width: 100%;
+      height: 120px;
+      background: #000;
+      cursor: pointer;
+    }
+
+    .media-card-body {
+      padding: 10px;
+    }
+
+    .media-card-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      margin: 0 0 5px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .media-card-info {
+      font-size: 11px;
+      color: #666;
+      margin: 0;
+    }
+
+    .media-card-actions {
+      padding: 5px 10px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .media-card-actions .btn {
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+
+    .recording-timer {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #dc3545;
+    }
+
+    .blink {
+      animation: blink-animation 1s steps(2, start) infinite;
+    }
+
+    @keyframes blink-animation {
+      to {
+        visibility: hidden;
+      }
+    }
+
+    .media-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-photo {
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+    }
+
+    .badge-video {
+      background: rgba(220, 53, 69, 0.9);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .media-counter {
+      background: #f8f9fa;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .media-counter i {
+      margin-right: 5px;
+    }
+
+    /* Modal de Confirmação de Exclusão - Responsivo */
+    .modal-confirm-delete {
+      width: 90%;
+      max-width: 450px;
+      margin: 20px auto;
+    }
+
+    .modal-header-danger {
+      background-color: #dc3545;
+      color: white;
+      border-radius: 6px 6px 0 0;
+      padding: 15px 20px;
+    }
+
+    .modal-header-danger .close {
+      color: white;
+      opacity: 0.8;
+      font-size: 24px;
+      margin-top: -2px;
+    }
+
+    .modal-header-danger .close:hover {
+      opacity: 1;
+      color: white;
+    }
+
+    .modal-header-danger .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .confirm-icon-container {
+      margin: 25px 0;
+    }
+
+    .confirm-trash-icon {
+      font-size: 64px;
+      color: #dc3545;
+      display: inline-block;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px) rotate(-5deg); }
+      75% { transform: translateX(5px) rotate(5deg); }
+    }
+
+    .confirm-message {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .confirm-item-name {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .btn-cancel-delete,
+    .btn-confirm-delete {
+      padding: 10px 25px;
+      font-size: 14px;
+      font-weight: 500;
+      min-width: 120px;
+    }
+
+    .btn-cancel-delete i,
+    .btn-confirm-delete i {
+      margin-right: 5px;
+    }
+
+    /* Responsividade - Tablets (768px - 991px) */
+    @media (min-width: 768px) and (max-width: 991px) {
+      .modal-confirm-delete {
+        max-width: 400px;
+      }
+
+      .confirm-trash-icon {
+        font-size: 56px;
+      }
+
+      .modal-header-danger .modal-title {
+        font-size: 17px;
+      }
+
+      .confirm-message {
+        font-size: 15px;
+      }
+    }
+
+    /* Responsividade - Desktops (992px - 1199px) */
+    @media (min-width: 992px) and (max-width: 1199px) {
+      .modal-confirm-delete {
+        max-width: 450px;
+      }
+
+      .confirm-trash-icon {
+        font-size: 72px;
+      }
+
+      .modal-header-danger .modal-title {
+        font-size: 19px;
+      }
+
+      .confirm-message {
+        font-size: 17px;
+      }
+
+      .btn-cancel-delete,
+      .btn-confirm-delete {
+        padding: 12px 30px;
+        font-size: 15px;
+        min-width: 130px;
+      }
+    }
+
+    /* Responsividade - Telas grandes (≥1200px) */
+    @media (min-width: 1200px) {
+      .modal-confirm-delete {
+        max-width: 500px;
+      }
+
+      .confirm-trash-icon {
+        font-size: 80px;
+      }
+
+      .modal-header-danger .modal-title {
+        font-size: 20px;
+      }
+
+      .modal-header-danger {
+        padding: 18px 25px;
+      }
+
+      .confirm-message {
+        font-size: 18px;
+      }
+
+      .confirm-icon-container {
+        margin: 30px 0;
+      }
+
+      .btn-cancel-delete,
+      .btn-confirm-delete {
+        padding: 12px 35px;
+        font-size: 16px;
+        min-width: 140px;
+      }
+    }
+
+    /* Ajustes gerais para mobile */
+    @media (max-width: 767px) {
+      .modal-confirm-delete {
+        width: 95%;
+        max-width: 350px;
+        margin: 10px auto;
+      }
+
+      .modal-header-danger {
+        padding: 12px 15px;
+      }
+
+      .modal-header-danger .modal-title {
+        font-size: 16px;
+      }
+
+      .confirm-icon-container {
+        margin: 20px 0;
+      }
+
+      .confirm-trash-icon {
+        font-size: 48px;
+      }
+
+      .confirm-message {
+        font-size: 14px;
+        padding: 0 10px;
+      }
+
+      .confirm-item-name {
+        font-size: 13px;
+      }
+
+      .modal-footer {
+        padding: 12px 15px;
+        flex-direction: column;
+      }
+
+      .btn-cancel-delete,
+      .btn-confirm-delete {
+        width: 100%;
+        margin-bottom: 8px;
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+
+      .btn-cancel-delete:last-child,
+      .btn-confirm-delete:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    /* Smartphones pequenos (≤360px) */
+    @media (max-width: 360px) {
+      .modal-confirm-delete {
+        width: 98%;
+        max-width: 300px;
+      }
+
+      .modal-header-danger .modal-title {
+        font-size: 14px;
+      }
+
+      .confirm-trash-icon {
+        font-size: 40px;
+      }
+
+      .confirm-message {
+        font-size: 13px;
+      }
+
+      .btn-cancel-delete,
+      .btn-confirm-delete {
+        padding: 10px 15px;
+        font-size: 13px;
+      }
+    }
+  </style>
+
+  <script>
+    $(document).ready(function() {
+      // Variáveis globais para mídia
+      var photoStream = null;
+      var videoStream = null;
+      var mediaRecorder = null;
+      var recordedChunks = [];
+      var photos = [];
+      var videos = [];
+      var timerInterval = null;
+      var recordingStartTime = null;
+      var currentFacingMode = 'environment';
+
+      // Preencher data e hora automaticamente
+      function setCurrentDateTime() {
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        var hours = String(now.getHours()).padStart(2, '0');
+        var minutes = String(now.getMinutes()).padStart(2, '0');
+
+        $('#dt_service').val(year + '-' + month + '-' + day);
+        $('#hr_service').val(hours + ':' + minutes);
+      }
+
+      setCurrentDateTime();
+
+      // Controle de combustível
+      function updateFuelGauge(value) {
+        var $gaugeFill = $('#fuelGaugeFill');
+        var $percentage = $('#fuelPercentage');
+
+        $gaugeFill.css('width', value + '%');
+        $percentage.text(value + '%');
+
+        $gaugeFill.removeClass('fuel-danger fuel-warning fuel-caution fuel-success');
+
+        if (value <= 25) {
+          $gaugeFill.addClass('fuel-danger');
+          $percentage.css('color', '#ff0000');
+        } else if (value <= 49) {
+          $gaugeFill.addClass('fuel-warning');
+          $percentage.css('color', '#ff8c00');
+        } else if (value <= 74) {
+          $gaugeFill.addClass('fuel-caution');
+          $percentage.css('color', '#ffd700');
+        } else {
+          $gaugeFill.addClass('fuel-success');
+          $percentage.css('color', '#28a745');
+        }
+      }
+
+      updateFuelGauge(50);
+
+      $('#fuelSlider').on('input', function() {
+        updateFuelGauge(parseInt($(this).val()));
+      });
+
+      // Funções para câmera
+      async function startCamera(videoElement, type) {
+        try {
+          var constraints = {
+            video: {
+              facingMode: currentFacingMode,
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: type === 'video'
+          };
+
+          var stream = await navigator.mediaDevices.getUserMedia(constraints);
+          videoElement.srcObject = stream;
+
+          if (type === 'photo') {
+            photoStream = stream;
+            $('#btnCapturePhoto').prop('disabled', false);
+          } else {
+            videoStream = stream;
+            $('#btnStartRecording').prop('disabled', false);
+          }
+
+          return stream;
+        } catch (err) {
+          console.error('Erro ao acessar câmera:', err);
+          alert('Não foi possível acessar a câmera. Verifique as permissões.');
+          return null;
+        }
+      }
+
+      function stopCamera(stream) {
+        if (stream) {
+          stream.getTracks().forEach(function(track) {
+            track.stop();
+          });
+        }
+      }
+
+      // Iniciar câmeras quando chegar na etapa 3
+      function initCameras() {
+        startCamera($('#cameraPreview')[0], 'photo');
+        startCamera($('#videoPreview')[0], 'video');
+      }
+
+      // Parar câmeras
+      function stopAllCameras() {
+        stopCamera(photoStream);
+        stopCamera(videoStream);
+        photoStream = null;
+        videoStream = null;
+      }
+
+      // Capturar foto
+      $('#btnCapturePhoto').click(function() {
+        var video = $('#cameraPreview')[0];
+        var canvas = $('#photoCanvas')[0];
+        var context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        var photoData = canvas.toDataURL('image/jpeg', 0.8);
+        var timestamp = new Date().toLocaleString('pt-BR');
+
+        photos.push({
+          data: photoData,
+          timestamp: timestamp,
+          id: Date.now()
+        });
+
+        renderPhotoCard(photos[photos.length - 1]);
+        updateMediaCounters();
+      });
+
+      // Renderizar card de foto
+      function renderPhotoCard(photo) {
+        var cardHtml = `
+          <div class="media-card" data-id="${photo.id}">
+            <div style="position: relative;">
+              <img src="${photo.data}" class="media-card-preview photo-preview" data-id="${photo.id}">
+              <span class="media-badge badge-photo"><i class="fa fa-camera"></i> Foto</span>
+            </div>
+            <div class="media-card-body">
+              <p class="media-card-title">Foto ${photos.length}</p>
+              <p class="media-card-info"><i class="fa fa-clock-o"></i> ${photo.timestamp}</p>
+            </div>
+            <div class="media-card-actions">
+              <button class="btn btn-xs btn-info btn-preview-photo" data-id="${photo.id}">
+                <i class="fa fa-eye"></i> Ver
+              </button>
+              <button class="btn btn-xs btn-danger btn-delete-photo" data-id="${photo.id}">
+                <i class="fa fa-trash"></i> Excluir
+              </button>
+            </div>
+          </div>
+        `;
+
+        $('#photosContainer').prepend(cardHtml);
+      }
+
+      // Iniciar gravação de vídeo
+      $('#btnStartRecording').click(function() {
+        recordedChunks = [];
+
+        var options = { mimeType: 'video/webm;codecs=vp9,opus' };
+
+        try {
+          mediaRecorder = new MediaRecorder(videoStream, options);
+        } catch (err) {
+          options = { mimeType: 'video/webm;codecs=vp8,opus' };
+          try {
+            mediaRecorder = new MediaRecorder(videoStream, options);
+          } catch (err2) {
+            options = { mimeType: 'video/webm' };
+            mediaRecorder = new MediaRecorder(videoStream, options);
+          }
+        }
+
+        mediaRecorder.ondataavailable = function(event) {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function() {
+          var blob = new Blob(recordedChunks, { type: 'video/webm' });
+          var url = URL.createObjectURL(blob);
+          var timestamp = new Date().toLocaleString('pt-BR');
+          var duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+
+          videos.push({
+            url: url,
+            blob: blob,
+            timestamp: timestamp,
+            duration: formatDuration(duration),
+            id: Date.now()
+          });
+
+          renderVideoCard(videos[videos.length - 1]);
+          updateMediaCounters();
+        };
+
+        mediaRecorder.start(100);
+        recordingStartTime = Date.now();
+
+        $('#btnStartRecording').prop('disabled', true);
+        $('#btnStopRecording').prop('disabled', false);
+        $('#recordingTimer').show();
+
+        startTimer();
+      });
+
+      // Parar gravação
+      $('#btnStopRecording').click(function() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+
+        $('#btnStartRecording').prop('disabled', false);
+        $('#btnStopRecording').prop('disabled', true);
+        $('#recordingTimer').hide();
+
+        stopTimer();
+      });
+
+      // Timer de gravação
+      function startTimer() {
+        timerInterval = setInterval(function() {
+          var elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+          $('#timerDisplay').text(formatDuration(elapsed));
+        }, 1000);
+      }
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        $('#timerDisplay').text('00:00');
+      }
+
+      function formatDuration(seconds) {
+        var mins = Math.floor(seconds / 60);
+        var secs = seconds % 60;
+        return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+      }
+
+      // Renderizar card de vídeo
+      function renderVideoCard(video) {
+        var cardHtml = `
+          <div class="media-card" data-id="${video.id}">
+            <div style="position: relative;">
+              <video class="media-card-video video-preview" data-url="${video.url}" muted>
+                <source src="${video.url}" type="video/webm">
+              </video>
+              <span class="media-badge badge-video"><i class="fa fa-video-camera"></i> Vídeo</span>
+            </div>
+            <div class="media-card-body">
+              <p class="media-card-title">Vídeo ${videos.length}</p>
+              <p class="media-card-info">
+                <i class="fa fa-clock-o"></i> ${video.timestamp}<br>
+                <i class="fa fa-film"></i> Duração: ${video.duration}
+              </p>
+            </div>
+            <div class="media-card-actions">
+              <button class="btn btn-xs btn-info btn-preview-video" data-url="${video.url}">
+                <i class="fa fa-play"></i> Assistir
+              </button>
+              <button class="btn btn-xs btn-danger btn-delete-video" data-id="${video.id}">
+                <i class="fa fa-trash"></i> Excluir
+              </button>
+            </div>
+          </div>
+        `;
+
+        $('#videosContainer').prepend(cardHtml);
+      }
+
+      // Atualizar contadores
+      function updateMediaCounters() {
+        $('#photoCounter').html('<i class="fa fa-camera"></i> Fotos: ' + photos.length);
+        $('#videoCounter').html('<i class="fa fa-video-camera"></i> Vídeos: ' + videos.length);
+      }
+
+      // Preview de foto
+      $(document).on('click', '.photo-preview, .btn-preview-photo', function() {
+        var id = $(this).closest('.media-card').data('id');
+        var photo = photos.find(function(p) { return p.id === id; });
+
+        if (photo) {
+          $('#mediaPreviewTitle').text('Preview da Foto');
+          $('#mediaPreviewContent').html('<img src="' + photo.data + '" style="max-width: 100%; max-height: 500px;">');
+          $('#modalMediaPreview').modal('show');
+        }
+      });
+
+      // Preview de vídeo
+      $(document).on('click', '.video-preview, .btn-preview-video', function() {
+        var url = $(this).data('url') || $(this).closest('.media-card').find('.video-preview').data('url');
+
+        if (url) {
+          $('#mediaPreviewTitle').text('Preview do Vídeo');
+          $('#mediaPreviewContent').html(`
+            <video controls autoplay style="max-width: 100%; max-height: 500px;">
+              <source src="${url}" type="video/webm">
+            </video>
+          `);
+          $('#modalMediaPreview').modal('show');
+        }
+      });
+
+      // Variáveis para controle de exclusão
+      var pendingDelete = null;
+
+      // Abrir modal de confirmação para exclusão
+      $(document).on('click', '.btn-delete-photo', function() {
+        var id = $(this).closest('.media-card').data('id');
+        var cardElement = $(this).closest('.media-card');
+        var photoIndex = photos.findIndex(function(p) { return p.id === id; });
+
+        pendingDelete = {
+          type: 'photo',
+          id: id,
+          element: cardElement,
+          name: 'Foto ' + (photoIndex + 1)
+        };
+
+        $('#deleteMessage').text('Tem certeza que deseja excluir esta foto?');
+        $('#deleteItemName').text(pendingDelete.name);
+        $('#modalConfirmDelete').modal('show');
+      });
+
+      $(document).on('click', '.btn-delete-video', function() {
+        var id = $(this).closest('.media-card').data('id');
+        var cardElement = $(this).closest('.media-card');
+        var videoIndex = videos.findIndex(function(v) { return v.id === id; });
+
+        pendingDelete = {
+          type: 'video',
+          id: id,
+          element: cardElement,
+          name: 'Vídeo ' + (videoIndex + 1)
+        };
+
+        $('#deleteMessage').text('Tem certeza que deseja excluir este vídeo?');
+        $('#deleteItemName').text(pendingDelete.name);
+        $('#modalConfirmDelete').modal('show');
+      });
+
+      // Confirmar exclusão
+      $('#btnConfirmDelete').click(function() {
+        if (!pendingDelete) return;
+
+        if (pendingDelete.type === 'photo') {
+          photos = photos.filter(function(p) { return p.id !== pendingDelete.id; });
+          pendingDelete.element.fadeOut(300, function() {
+            $(this).remove();
+            updateMediaCounters();
+          });
+        } else if (pendingDelete.type === 'video') {
+          var video = videos.find(function(v) { return v.id === pendingDelete.id; });
+          if (video) {
+            URL.revokeObjectURL(video.url);
+          }
+          videos = videos.filter(function(v) { return v.id !== pendingDelete.id; });
+          pendingDelete.element.fadeOut(300, function() {
+            $(this).remove();
+            updateMediaCounters();
+          });
+        }
+
+        pendingDelete = null;
+        $('#modalConfirmDelete').modal('hide');
+      });
+
+      // Limpar pendingDelete ao fechar modal
+      $('#modalConfirmDelete').on('hidden.bs.modal', function() {
+        pendingDelete = null;
+      });
+
+      // Trocar câmera
+      $('#btnToggleCamera').click(function() {
+        currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+        stopCamera(photoStream);
+        startCamera($('#cameraPreview')[0], 'photo');
+      });
+
+      // Navegação do wizard
+      $('.btn-next').click(function() {
+        var currentStep = $(this).data('step');
+        var nextStep = currentStep + 1;
+
+        // Validação
+        var missingFields = [];
+        $('#step' + currentStep + ' input[required], #step' + currentStep + ' textarea[required]').each(function() {
+          if (!$(this).val().trim()) {
+            var label = $(this).closest('.form-group').find('label').text();
+            missingFields.push(label);
+            $(this).parent().addClass('has-error');
+          } else {
+            $(this).parent().removeClass('has-error');
+          }
+        });
+
+        if (missingFields.length > 0) {
+          var listHtml = '';
+          $.each(missingFields, function(i, field) {
+            listHtml += '<li class="list-group-item"><i class="fa fa-times text-danger"></i> ' + field + '</li>';
+          });
+          $('#validationList').html(listHtml);
+          $('#modalValidation').modal('show');
+          return;
+        }
+
+        // Avançar para próximo step
+        $('#step' + currentStep).hide();
+        $('#step' + nextStep).show();
+
+        // Atualizar indicador de steps
+        $('.wizard-steps li').removeClass('active');
+        $('.wizard-steps li[data-step="' + nextStep + '"]').addClass('active');
+
+        // Iniciar câmeras na etapa 3
+        if (nextStep === 3) {
+          initCameras();
+          updateMediaCounters();
+        }
+      });
+
+      // Voltar step anterior
+      $('.btn-prev').click(function() {
+        var currentStep = $(this).data('step');
+        var prevStep = currentStep - 1;
+
+        $('#step' + currentStep).hide();
+        $('#step' + prevStep).show();
+
+        // Atualizar indicador de steps
+        $('.wizard-steps li').removeClass('active');
+        $('.wizard-steps li[data-step="' + prevStep + '"]').addClass('active');
+
+        // Parar câmeras se sair da etapa 3
+        if (currentStep === 3) {
+          stopAllCameras();
+          stopTimer();
+        }
+      });
+
+      // Salvar checklist
+      $('.btn-save-checklist').click(function() {
+        var formData = {};
+
+        // Coletar dados de todos os steps
+        $('#formChecklistStep1, #formChecklistStep2').each(function() {
+          var stepData = $(this).serializeArray();
+          $.each(stepData, function(i, field) {
+            formData[field.name] = field.value;
+          });
+        });
+
+        // Adicionar informações sobre mídia
+        formData.total_photos = photos.length;
+        formData.total_videos = videos.length;
+        formData.photos = photos.map(function(p) {
+          return {
+            timestamp: p.timestamp,
+            data: p.data
+          };
+        });
+        formData.videos = videos.map(function(v) {
+          return {
+            timestamp: v.timestamp,
+            duration: v.duration
+          };
+        });
+
+        console.log('Dados do checklist:', formData);
+        alert('Checklist salvo com sucesso!\n\nFotos: ' + photos.length + '\nVídeos: ' + videos.length + '\n\n(Dados no console)');
+
+        // Aqui será implementada a chamada AJAX para salvar
+        // $.ajax({
+        //   url: '/save_checklist',
+        //   method: 'POST',
+        //   data: formData,
+        //   success: function(response) {
+        //     alert('Checklist salvo com sucesso!');
+        //   }
+        // });
+      });
+
+      // Parar câmeras ao fechar/recarregar a página
+      $(window).on('beforeunload', function() {
+        stopAllCameras();
+      });
+    });
+  </script>

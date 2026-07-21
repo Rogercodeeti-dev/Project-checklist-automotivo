@@ -141,6 +141,18 @@ class IndexController extends Action {
 		$this->render('roles');
 	}
 
+	public function newchecklist() {
+		$this->render('newchecklist');
+	}
+
+	public function checklistprogress() {
+		$this->render('checklistprogress');
+	}
+
+	public function checklistfinished() {
+		$this->render('checklistfinished');
+	}
+
 	//Update module
 	public function update_module() {
 		
