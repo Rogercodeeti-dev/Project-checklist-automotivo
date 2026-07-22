@@ -123,8 +123,18 @@ class IndexController extends Action {
 	public function listservice() {
 		$service = Container::getModel('Service');
 		$services = $service->getAllServices();
+		$laborforce = Container::getModel('Laborforce');
+		$laborforces = $laborforce->getAllLaborforces();
 		$this->view->services = $services;
+		$this->view->laborforces = $laborforces;
 		$this->render('services');
+	}
+
+	public function listlaborforce() {
+		$laborforce = Container::getModel('Laborforce');
+		$laborforces = $laborforce->getAllLaborforces();
+		$this->view->laborforces = $laborforces;
+		$this->render('laborforce');
 	}
 
 	public function listposition() {

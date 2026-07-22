@@ -265,6 +265,37 @@ class Route extends Bootstrap {
 			'action' => 'get_all_services'
 		);
 
+		//Mão de Obra
+		$routes['listlaborforce'] = array(
+			'route' => '/listlaborforce',
+			'controller' => 'IndexController',
+			'action' => 'listlaborforce'
+		);
+
+		$routes['save_laborforce'] = array(
+			'route' => '/save_laborforce',
+			'controller' => 'AppController',
+			'action' => 'save_laborforce'
+		);
+
+		$routes['get_laborforce'] = array(
+			'route' => '/get_laborforce',
+			'controller' => 'AppController',
+			'action' => 'get_laborforce'
+		);
+
+		$routes['update_laborforce'] = array(
+			'route' => '/update_laborforce',
+			'controller' => 'AppController',
+			'action' => 'update_laborforce'
+		);
+
+		$routes['delete_laborforce'] = array(
+			'route' => '/delete_laborforce',
+			'controller' => 'AppController',
+			'action' => 'delete_laborforce'
+		);
+
 		//Cargo
 		$routes['listposition'] = array(
 			'route' => '/listposition',

@@ -1,4 +1,4 @@
-  <div class="">
+﻿  <div class="">
     <section class="content-header">
       <h1>Novo Checklist</h1>
     </section>
@@ -58,6 +58,29 @@
                   <div class="form-group">
                     <label>Telefone</label>
                     <input type="text" name="nr_phone" class="form-control" placeholder="(00) 00000-0000">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Serviço</label>
+                    <select name="id_service" id="id_service" class="form-control" required>
+                      <option value="">Selecione o serviço</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Tempo Estimado</label>
+                    <input type="text" id="estimated_type_display" class="form-control" readonly placeholder="--">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Tempo Previsto</label>
+                    <input type="text" name="estimated_time" id="estimated_time" class="form-control" placeholder="Ex: 45 minutos">
                   </div>
                 </div>
               </div>
@@ -664,7 +687,7 @@
       }
     }
 
-    /* Responsividade - Telas grandes (≥1200px) */
+    /* Responsividade - Telas grandes (>=1200px) */
     @media (min-width: 1200px) {
       .modal-confirm-delete {
         max-width: 500px;
@@ -750,7 +773,7 @@
       }
     }
 
-    /* Smartphones pequenos (≤360px) */
+    /* Smartphones pequenos (<=360px) */
     @media (max-width: 360px) {
       .modal-confirm-delete {
         width: 98%;
@@ -777,498 +800,4 @@
     }
   </style>
 
-  <script>
-    $(document).ready(function() {
-      // Variáveis globais para mídia
-      var photoStream = null;
-      var videoStream = null;
-      var mediaRecorder = null;
-      var recordedChunks = [];
-      var photos = [];
-      var videos = [];
-      var timerInterval = null;
-      var recordingStartTime = null;
-      var currentFacingMode = 'environment';
-
-      // Preencher data e hora automaticamente
-      function setCurrentDateTime() {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = String(now.getMonth() + 1).padStart(2, '0');
-        var day = String(now.getDate()).padStart(2, '0');
-        var hours = String(now.getHours()).padStart(2, '0');
-        var minutes = String(now.getMinutes()).padStart(2, '0');
-
-        $('#dt_service').val(year + '-' + month + '-' + day);
-        $('#hr_service').val(hours + ':' + minutes);
-      }
-
-      setCurrentDateTime();
-
-      // Controle de combustível
-      function updateFuelGauge(value) {
-        var $gaugeFill = $('#fuelGaugeFill');
-        var $percentage = $('#fuelPercentage');
-
-        $gaugeFill.css('width', value + '%');
-        $percentage.text(value + '%');
-
-        $gaugeFill.removeClass('fuel-danger fuel-warning fuel-caution fuel-success');
-
-        if (value <= 25) {
-          $gaugeFill.addClass('fuel-danger');
-          $percentage.css('color', '#ff0000');
-        } else if (value <= 49) {
-          $gaugeFill.addClass('fuel-warning');
-          $percentage.css('color', '#ff8c00');
-        } else if (value <= 74) {
-          $gaugeFill.addClass('fuel-caution');
-          $percentage.css('color', '#ffd700');
-        } else {
-          $gaugeFill.addClass('fuel-success');
-          $percentage.css('color', '#28a745');
-        }
-      }
-
-      updateFuelGauge(50);
-
-      $('#fuelSlider').on('input', function() {
-        updateFuelGauge(parseInt($(this).val()));
-      });
-
-      // Funções para câmera
-      async function startCamera(videoElement, type) {
-        try {
-          var constraints = {
-            video: {
-              facingMode: currentFacingMode,
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            },
-            audio: type === 'video'
-          };
-
-          var stream = await navigator.mediaDevices.getUserMedia(constraints);
-          videoElement.srcObject = stream;
-
-          if (type === 'photo') {
-            photoStream = stream;
-            $('#btnCapturePhoto').prop('disabled', false);
-          } else {
-            videoStream = stream;
-            $('#btnStartRecording').prop('disabled', false);
-          }
-
-          return stream;
-        } catch (err) {
-          console.error('Erro ao acessar câmera:', err);
-          alert('Não foi possível acessar a câmera. Verifique as permissões.');
-          return null;
-        }
-      }
-
-      function stopCamera(stream) {
-        if (stream) {
-          stream.getTracks().forEach(function(track) {
-            track.stop();
-          });
-        }
-      }
-
-      // Iniciar câmeras quando chegar na etapa 3
-      function initCameras() {
-        startCamera($('#cameraPreview')[0], 'photo');
-        startCamera($('#videoPreview')[0], 'video');
-      }
-
-      // Parar câmeras
-      function stopAllCameras() {
-        stopCamera(photoStream);
-        stopCamera(videoStream);
-        photoStream = null;
-        videoStream = null;
-      }
-
-      // Capturar foto
-      $('#btnCapturePhoto').click(function() {
-        var video = $('#cameraPreview')[0];
-        var canvas = $('#photoCanvas')[0];
-        var context = canvas.getContext('2d');
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        var photoData = canvas.toDataURL('image/jpeg', 0.8);
-        var timestamp = new Date().toLocaleString('pt-BR');
-
-        photos.push({
-          data: photoData,
-          timestamp: timestamp,
-          id: Date.now()
-        });
-
-        renderPhotoCard(photos[photos.length - 1]);
-        updateMediaCounters();
-      });
-
-      // Renderizar card de foto
-      function renderPhotoCard(photo) {
-        var cardHtml = `
-          <div class="media-card" data-id="${photo.id}">
-            <div style="position: relative;">
-              <img src="${photo.data}" class="media-card-preview photo-preview" data-id="${photo.id}">
-              <span class="media-badge badge-photo"><i class="fa fa-camera"></i> Foto</span>
-            </div>
-            <div class="media-card-body">
-              <p class="media-card-title">Foto ${photos.length}</p>
-              <p class="media-card-info"><i class="fa fa-clock-o"></i> ${photo.timestamp}</p>
-            </div>
-            <div class="media-card-actions">
-              <button class="btn btn-xs btn-info btn-preview-photo" data-id="${photo.id}">
-                <i class="fa fa-eye"></i> Ver
-              </button>
-              <button class="btn btn-xs btn-danger btn-delete-photo" data-id="${photo.id}">
-                <i class="fa fa-trash"></i> Excluir
-              </button>
-            </div>
-          </div>
-        `;
-
-        $('#photosContainer').prepend(cardHtml);
-      }
-
-      // Iniciar gravação de vídeo
-      $('#btnStartRecording').click(function() {
-        recordedChunks = [];
-
-        var options = { mimeType: 'video/webm;codecs=vp9,opus' };
-
-        try {
-          mediaRecorder = new MediaRecorder(videoStream, options);
-        } catch (err) {
-          options = { mimeType: 'video/webm;codecs=vp8,opus' };
-          try {
-            mediaRecorder = new MediaRecorder(videoStream, options);
-          } catch (err2) {
-            options = { mimeType: 'video/webm' };
-            mediaRecorder = new MediaRecorder(videoStream, options);
-          }
-        }
-
-        mediaRecorder.ondataavailable = function(event) {
-          if (event.data && event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = function() {
-          var blob = new Blob(recordedChunks, { type: 'video/webm' });
-          var url = URL.createObjectURL(blob);
-          var timestamp = new Date().toLocaleString('pt-BR');
-          var duration = Math.floor((Date.now() - recordingStartTime) / 1000);
-
-          videos.push({
-            url: url,
-            blob: blob,
-            timestamp: timestamp,
-            duration: formatDuration(duration),
-            id: Date.now()
-          });
-
-          renderVideoCard(videos[videos.length - 1]);
-          updateMediaCounters();
-        };
-
-        mediaRecorder.start(100);
-        recordingStartTime = Date.now();
-
-        $('#btnStartRecording').prop('disabled', true);
-        $('#btnStopRecording').prop('disabled', false);
-        $('#recordingTimer').show();
-
-        startTimer();
-      });
-
-      // Parar gravação
-      $('#btnStopRecording').click(function() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-
-        $('#btnStartRecording').prop('disabled', false);
-        $('#btnStopRecording').prop('disabled', true);
-        $('#recordingTimer').hide();
-
-        stopTimer();
-      });
-
-      // Timer de gravação
-      function startTimer() {
-        timerInterval = setInterval(function() {
-          var elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-          $('#timerDisplay').text(formatDuration(elapsed));
-        }, 1000);
-      }
-
-      function stopTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        $('#timerDisplay').text('00:00');
-      }
-
-      function formatDuration(seconds) {
-        var mins = Math.floor(seconds / 60);
-        var secs = seconds % 60;
-        return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-      }
-
-      // Renderizar card de vídeo
-      function renderVideoCard(video) {
-        var cardHtml = `
-          <div class="media-card" data-id="${video.id}">
-            <div style="position: relative;">
-              <video class="media-card-video video-preview" data-url="${video.url}" muted>
-                <source src="${video.url}" type="video/webm">
-              </video>
-              <span class="media-badge badge-video"><i class="fa fa-video-camera"></i> Vídeo</span>
-            </div>
-            <div class="media-card-body">
-              <p class="media-card-title">Vídeo ${videos.length}</p>
-              <p class="media-card-info">
-                <i class="fa fa-clock-o"></i> ${video.timestamp}<br>
-                <i class="fa fa-film"></i> Duração: ${video.duration}
-              </p>
-            </div>
-            <div class="media-card-actions">
-              <button class="btn btn-xs btn-info btn-preview-video" data-url="${video.url}">
-                <i class="fa fa-play"></i> Assistir
-              </button>
-              <button class="btn btn-xs btn-danger btn-delete-video" data-id="${video.id}">
-                <i class="fa fa-trash"></i> Excluir
-              </button>
-            </div>
-          </div>
-        `;
-
-        $('#videosContainer').prepend(cardHtml);
-      }
-
-      // Atualizar contadores
-      function updateMediaCounters() {
-        $('#photoCounter').html('<i class="fa fa-camera"></i> Fotos: ' + photos.length);
-        $('#videoCounter').html('<i class="fa fa-video-camera"></i> Vídeos: ' + videos.length);
-      }
-
-      // Preview de foto
-      $(document).on('click', '.photo-preview, .btn-preview-photo', function() {
-        var id = $(this).closest('.media-card').data('id');
-        var photo = photos.find(function(p) { return p.id === id; });
-
-        if (photo) {
-          $('#mediaPreviewTitle').text('Preview da Foto');
-          $('#mediaPreviewContent').html('<img src="' + photo.data + '" style="max-width: 100%; max-height: 500px;">');
-          $('#modalMediaPreview').modal('show');
-        }
-      });
-
-      // Preview de vídeo
-      $(document).on('click', '.video-preview, .btn-preview-video', function() {
-        var url = $(this).data('url') || $(this).closest('.media-card').find('.video-preview').data('url');
-
-        if (url) {
-          $('#mediaPreviewTitle').text('Preview do Vídeo');
-          $('#mediaPreviewContent').html(`
-            <video controls autoplay style="max-width: 100%; max-height: 500px;">
-              <source src="${url}" type="video/webm">
-            </video>
-          `);
-          $('#modalMediaPreview').modal('show');
-        }
-      });
-
-      // Variáveis para controle de exclusão
-      var pendingDelete = null;
-
-      // Abrir modal de confirmação para exclusão
-      $(document).on('click', '.btn-delete-photo', function() {
-        var id = $(this).closest('.media-card').data('id');
-        var cardElement = $(this).closest('.media-card');
-        var photoIndex = photos.findIndex(function(p) { return p.id === id; });
-
-        pendingDelete = {
-          type: 'photo',
-          id: id,
-          element: cardElement,
-          name: 'Foto ' + (photoIndex + 1)
-        };
-
-        $('#deleteMessage').text('Tem certeza que deseja excluir esta foto?');
-        $('#deleteItemName').text(pendingDelete.name);
-        $('#modalConfirmDelete').modal('show');
-      });
-
-      $(document).on('click', '.btn-delete-video', function() {
-        var id = $(this).closest('.media-card').data('id');
-        var cardElement = $(this).closest('.media-card');
-        var videoIndex = videos.findIndex(function(v) { return v.id === id; });
-
-        pendingDelete = {
-          type: 'video',
-          id: id,
-          element: cardElement,
-          name: 'Vídeo ' + (videoIndex + 1)
-        };
-
-        $('#deleteMessage').text('Tem certeza que deseja excluir este vídeo?');
-        $('#deleteItemName').text(pendingDelete.name);
-        $('#modalConfirmDelete').modal('show');
-      });
-
-      // Confirmar exclusão
-      $('#btnConfirmDelete').click(function() {
-        if (!pendingDelete) return;
-
-        if (pendingDelete.type === 'photo') {
-          photos = photos.filter(function(p) { return p.id !== pendingDelete.id; });
-          pendingDelete.element.fadeOut(300, function() {
-            $(this).remove();
-            updateMediaCounters();
-          });
-        } else if (pendingDelete.type === 'video') {
-          var video = videos.find(function(v) { return v.id === pendingDelete.id; });
-          if (video) {
-            URL.revokeObjectURL(video.url);
-          }
-          videos = videos.filter(function(v) { return v.id !== pendingDelete.id; });
-          pendingDelete.element.fadeOut(300, function() {
-            $(this).remove();
-            updateMediaCounters();
-          });
-        }
-
-        pendingDelete = null;
-        $('#modalConfirmDelete').modal('hide');
-      });
-
-      // Limpar pendingDelete ao fechar modal
-      $('#modalConfirmDelete').on('hidden.bs.modal', function() {
-        pendingDelete = null;
-      });
-
-      // Trocar câmera
-      $('#btnToggleCamera').click(function() {
-        currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-        stopCamera(photoStream);
-        startCamera($('#cameraPreview')[0], 'photo');
-      });
-
-      // Navegação do wizard
-      $('.btn-next').click(function() {
-        var currentStep = $(this).data('step');
-        var nextStep = currentStep + 1;
-
-        // Validação
-        var missingFields = [];
-        $('#step' + currentStep + ' input[required], #step' + currentStep + ' textarea[required]').each(function() {
-          if (!$(this).val().trim()) {
-            var label = $(this).closest('.form-group').find('label').text();
-            missingFields.push(label);
-            $(this).parent().addClass('has-error');
-          } else {
-            $(this).parent().removeClass('has-error');
-          }
-        });
-
-        if (missingFields.length > 0) {
-          var listHtml = '';
-          $.each(missingFields, function(i, field) {
-            listHtml += '<li class="list-group-item"><i class="fa fa-times text-danger"></i> ' + field + '</li>';
-          });
-          $('#validationList').html(listHtml);
-          $('#modalValidation').modal('show');
-          return;
-        }
-
-        // Avançar para próximo step
-        $('#step' + currentStep).hide();
-        $('#step' + nextStep).show();
-
-        // Atualizar indicador de steps
-        $('.wizard-steps li').removeClass('active');
-        $('.wizard-steps li[data-step="' + nextStep + '"]').addClass('active');
-
-        // Iniciar câmeras na etapa 3
-        if (nextStep === 3) {
-          initCameras();
-          updateMediaCounters();
-        }
-      });
-
-      // Voltar step anterior
-      $('.btn-prev').click(function() {
-        var currentStep = $(this).data('step');
-        var prevStep = currentStep - 1;
-
-        $('#step' + currentStep).hide();
-        $('#step' + prevStep).show();
-
-        // Atualizar indicador de steps
-        $('.wizard-steps li').removeClass('active');
-        $('.wizard-steps li[data-step="' + prevStep + '"]').addClass('active');
-
-        // Parar câmeras se sair da etapa 3
-        if (currentStep === 3) {
-          stopAllCameras();
-          stopTimer();
-        }
-      });
-
-      // Salvar checklist
-      $('.btn-save-checklist').click(function() {
-        var formData = {};
-
-        // Coletar dados de todos os steps
-        $('#formChecklistStep1, #formChecklistStep2').each(function() {
-          var stepData = $(this).serializeArray();
-          $.each(stepData, function(i, field) {
-            formData[field.name] = field.value;
-          });
-        });
-
-        // Adicionar informações sobre mídia
-        formData.total_photos = photos.length;
-        formData.total_videos = videos.length;
-        formData.photos = photos.map(function(p) {
-          return {
-            timestamp: p.timestamp,
-            data: p.data
-          };
-        });
-        formData.videos = videos.map(function(v) {
-          return {
-            timestamp: v.timestamp,
-            duration: v.duration
-          };
-        });
-
-        console.log('Dados do checklist:', formData);
-        alert('Checklist salvo com sucesso!\n\nFotos: ' + photos.length + '\nVídeos: ' + videos.length + '\n\n(Dados no console)');
-
-        // Aqui será implementada a chamada AJAX para salvar
-        // $.ajax({
-        //   url: '/save_checklist',
-        //   method: 'POST',
-        //   data: formData,
-        //   success: function(response) {
-        //     alert('Checklist salvo com sucesso!');
-        //   }
-        // });
-      });
-
-      // Parar câmeras ao fechar/recarregar a página
-      $(window).on('beforeunload', function() {
-        stopAllCameras();
-      });
-    });
-  </script>
+  <script src="/modules/newchecklist.js"></script>

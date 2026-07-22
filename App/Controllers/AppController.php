@@ -827,6 +827,10 @@ class AppController extends Action {
 	public function save_service() {
 		try {
 			$ds_service = trim($_POST['ds_service'] ?? '');
+			$estimated_time = trim($_POST['estimated_time'] ?? '');
+			$is_active = isset($_POST['is_active']) ? 1 : 0;
+			$id_labor = isset($_POST['id_labor']) && $_POST['id_labor'] !== '' ? (int) $_POST['id_labor'] : null;
+
 			if ($ds_service === '') {
 				header('Content-Type: application/json');
 				echo json_encode(['success' => false, 'message' => 'A descrição do serviço é obrigatória.']);
@@ -843,6 +847,9 @@ class AppController extends Action {
 			}
 
 			$service->__set('ds_service', $ds_service);
+			$service->__set('estimated_time', $estimated_time);
+			$service->__set('is_active', $is_active);
+			$service->__set('id_labor', $id_labor);
 			$id = $service->save();
 			header('Content-Type: application/json');
 			echo json_encode(['success' => true, 'message' => 'Serviço cadastrado com sucesso.']);
@@ -870,6 +877,10 @@ class AppController extends Action {
 		try {
 			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 			$ds_service = trim($_POST['ds_service'] ?? '');
+			$estimated_time = trim($_POST['estimated_time'] ?? '');
+			$is_active = isset($_POST['is_active']) ? 1 : 0;
+			$id_labor = isset($_POST['id_labor']) && $_POST['id_labor'] !== '' ? (int) $_POST['id_labor'] : null;
+
 			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
 			if ($ds_service === '') { echo json_encode(['success' => false, 'message' => 'A descrição do serviço é obrigatória.']); return; }
 
@@ -884,6 +895,9 @@ class AppController extends Action {
 
 			$service->__set('id', $id);
 			$service->__set('ds_service', $ds_service);
+			$service->__set('estimated_time', $estimated_time);
+			$service->__set('is_active', $is_active);
+			$service->__set('id_labor', $id_labor);
 			$ok = $service->update();
 			header('Content-Type: application/json');
 			echo json_encode(['success' => (bool)$ok, 'message' => 'Serviço atualizado com sucesso.']);
@@ -917,6 +931,101 @@ class AppController extends Action {
 		header('Content-Type: application/json');
 		echo json_encode($services ?: []);
 		exit;
+	}
+
+	// ===================== MÃO DE OBRA =====================
+
+	public function save_laborforce() {
+		try {
+			$ds_type = trim($_POST['ds_type'] ?? '');
+			$vl_labor = isset($_POST['vl_labor']) ? floatval(str_replace(',', '.', $_POST['vl_labor'])) : 0;
+
+			if ($ds_type === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'O tipo de mão de obra é obrigatório.']);
+				return;
+			}
+
+			$laborforce = Container::getModel('Laborforce');
+
+			$existing = $laborforce->findByType($ds_type);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe uma mão de obra cadastrada com o tipo "' . htmlspecialchars($ds_type) . '".']);
+				return;
+			}
+
+			$laborforce->__set('ds_type', $ds_type);
+			$laborforce->__set('vl_labor', $vl_labor);
+			$id = $laborforce->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Mão de obra cadastrada com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe uma mão de obra cadastrada com este tipo.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar mão de obra.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_laborforce() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$laborforce = Container::getModel('Laborforce');
+		$data = $laborforce->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_laborforce() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_type = trim($_POST['ds_type'] ?? '');
+			$vl_labor = isset($_POST['vl_labor']) ? floatval(str_replace(',', '.', $_POST['vl_labor'])) : 0;
+
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_type === '') { echo json_encode(['success' => false, 'message' => 'O tipo de mão de obra é obrigatório.']); return; }
+
+			$laborforce = Container::getModel('Laborforce');
+
+			$existing = $laborforce->findByType($ds_type);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe uma mão de obra cadastrada com o tipo "' . htmlspecialchars($ds_type) . '".']);
+				return;
+			}
+
+			$laborforce->__set('id', $id);
+			$laborforce->__set('ds_type', $ds_type);
+			$laborforce->__set('vl_labor', $vl_labor);
+			$ok = $laborforce->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Mão de obra atualizada com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe uma mão de obra cadastrada com este tipo.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar mão de obra.']);
+			}
+		}
+	}
+
+	public function delete_laborforce() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$laborforce = Container::getModel('Laborforce');
+			$ok = $laborforce->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Mão de obra excluída com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir mão de obra.']);
+		}
 	}
 
 	// ===================== CARGO =====================

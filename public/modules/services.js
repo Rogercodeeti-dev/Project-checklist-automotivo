@@ -44,6 +44,9 @@ $(function() {
       }
       $('#edit_service_id').val(data.id);
       $('#edit_ds_service').val(data.ds_service);
+      $('#edit_estimated_time').val(data.estimated_time || '');
+      $('#edit_id_labor').val(data.id_labor || '');
+      $('#edit_is_active').prop('checked', parseInt(data.is_active) === 1);
       $('#modalEditService').modal('show');
     }).fail(function() {
       Notificacoes.showToast('Erro ao buscar serviço', 'error');
