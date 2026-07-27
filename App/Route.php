@@ -296,6 +296,12 @@ class Route extends Bootstrap {
 			'action' => 'delete_laborforce'
 		);
 
+		$routes['get_all_laborforces'] = array(
+			'route' => '/get_all_laborforces',
+			'controller' => 'AppController',
+			'action' => 'get_all_laborforces'
+		);
+
 		//Cargo
 		$routes['listposition'] = array(
 			'route' => '/listposition',

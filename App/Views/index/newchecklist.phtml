@@ -27,6 +27,11 @@
                   <span class="badge">3</span> Registro Visual
                 </a>
               </li>
+              <li data-step="4">
+                <a href="#">
+                  <span class="badge">4</span> Orçamento e Mão de Obra
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -65,28 +70,13 @@
               <div class="row">
                 <div class="col-md-4">
                   <div class="form-group">
-                    <label>Serviço</label>
-                    <select name="id_service" id="id_service" class="form-control" required>
-                      <option value="">Selecione o serviço</option>
+                    <label>Tipo de Mão de Obra</label>
+                    <select name="id_laborforce" id="id_laborforce" class="form-control" required>
+                      <option value="">Selecione o tipo</option>
                     </select>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label>Tempo Estimado</label>
-                    <input type="text" id="estimated_type_display" class="form-control" readonly placeholder="--">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label>Tempo Previsto</label>
-                    <input type="text" name="estimated_time" id="estimated_time" class="form-control" placeholder="Ex: 45 minutos">
-                  </div>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-8">
                   <div class="form-group">
                     <label>E-mail</label>
                     <input type="email" name="ds_email" class="form-control" placeholder="email@exemplo.com">
@@ -247,11 +237,194 @@
               <button type="button" class="btn btn-default btn-prev" data-step="3">
                 <i class="fa fa-arrow-left"></i> Voltar
               </button>
+              <button type="button" class="btn btn-primary btn-next pull-right" data-step="3">
+                Próximo <i class="fa fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 4: Orçamento e Mão de Obra -->
+          <div id="step4" class="wizard-step-content" style="display: none;">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="box box-info">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-calculator"></i> Adicionar Item de Orçamento</h3>
+                  </div>
+                  <div class="box-body">
+                    <form id="formBudgetItem">
+                      <div class="row">
+                        <div class="col-md-2">
+                          <div class="form-group">
+                            <label>Quantidade</label>
+                            <input type="number" name="budget_qty" id="budget_qty" class="form-control" min="1" value="1" required>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label>Descrição da Peça</label>
+                            <input type="text" name="budget_part" id="budget_part" class="form-control" placeholder="Ex: Pastilha de freio" required>
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <div class="form-group">
+                            <label>Descrição da Mão de Obra</label>
+                            <input type="text" name="budget_labor_desc" id="budget_labor_desc" class="form-control" list="laborDescList" placeholder="Selecione ou digite" required>
+                            <datalist id="laborDescList">
+                              <option value="Substituição">
+                              <option value="Reparo">
+                            </datalist>
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <div class="form-group">
+                            <label>Tempo</label>
+                            <input type="text" name="budget_time" id="budget_time" class="form-control" placeholder="Ex: 1:25" required>
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <div class="form-group">
+                            <label>Valor Unit. Peça (R$)</label>
+                            <input type="text" name="budget_unit_price" id="budget_unit_price" class="form-control" placeholder="0,00" required>
+                          </div>
+                        </div>
+                        <div class="col-md-2">
+                          <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-success btn-block" id="btnAddBudgetItem">
+                              <i class="fa fa-plus"></i> Adicionar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="box box-primary">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-list"></i> Itens do Orçamento</h3>
+                  </div>
+                  <div class="box-body">
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-striped" id="tblBudgetItems">
+                        <thead>
+                          <tr>
+                            <th class="text-center" style="width:6%">Qtd</th>
+                            <th>Peça</th>
+                            <th>Desc. Mão de Obra</th>
+                            <th class="text-center" style="width:8%">Tempo</th>
+                            <th class="text-right" style="width:12%">Vlr Mão Obra</th>
+                            <th class="text-right" style="width:12%">Vlr Unit. Peça</th>
+                            <th class="text-right" style="width:12%">Total Peça</th>
+                            <th class="text-center" style="width:6%">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody id="budgetItemsBody">
+                          <tr id="budgetEmptyRow">
+                            <td colspan="8" class="text-center text-muted">Nenhum item adicionado.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fotos e Vídeos das Peças -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="box box-success">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-camera"></i> Fotos das Peças</h3>
+                  </div>
+                  <div class="box-body">
+                    <div class="text-center">
+                      <video id="budgetCameraPreview" class="camera-preview" autoplay playsinline></video>
+                      <canvas id="budgetPhotoCanvas" style="display: none;"></canvas>
+                      <div class="btn-group" style="margin-top: 15px;">
+                        <button type="button" class="btn btn-success btn-lg" id="btnBudgetCapturePhoto" disabled>
+                          <i class="fa fa-camera"></i> Capturar Foto
+                        </button>
+                        <button type="button" class="btn btn-default" id="btnBudgetToggleCamera">
+                          <i class="fa fa-refresh"></i> Trocar Câmera
+                        </button>
+                      </div>
+                    </div>
+                    <div id="budgetPhotosContainer" class="media-cards-container" style="margin-top: 20px;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="box box-info">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-video-camera"></i> Vídeos das Peças</h3>
+                  </div>
+                  <div class="box-body">
+                    <div class="text-center">
+                      <video id="budgetVideoPreview" class="camera-preview" autoplay playsinline></video>
+                      <div class="btn-group" style="margin-top: 15px;">
+                        <button type="button" class="btn btn-danger btn-lg" id="btnBudgetStartRecording" disabled>
+                          <i class="fa fa-circle"></i> Iniciar Gravação
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" id="btnBudgetStopRecording" disabled>
+                          <i class="fa fa-stop"></i> Parar Gravação
+                        </button>
+                      </div>
+                      <div id="budgetRecordingTimer" class="recording-timer" style="display: none;">
+                        <i class="fa fa-circle text-danger blink"></i> Gravando: <span id="budgetTimerDisplay">00:00</span>
+                      </div>
+                    </div>
+                    <div id="budgetVideosContainer" class="media-cards-container" style="margin-top: 20px;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 col-md-offset-6">
+                <div class="box box-solid box-success">
+                  <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-money"></i> Resumo do Orçamento</h3>
+                  </div>
+                  <div class="box-body">
+                    <table class="table no-margin">
+                      <tr>
+                        <th style="width:60%">Total de Peças:</th>
+                        <td class="text-right" id="budgetTotalParts">R$ 0,00</td>
+                      </tr>
+                      <tr>
+                        <th>Total de Mão de Obra:</th>
+                        <td class="text-right" id="budgetTotalLabor">R$ 0,00</td>
+                      </tr>
+                      <tr style="font-size:18px; font-weight:bold;">
+                        <th>Total Orçamento:</th>
+                        <td class="text-right text-success" id="budgetTotalGeral">R$ 0,00</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+              <button type="button" class="btn btn-default btn-prev" data-step="4">
+                <i class="fa fa-arrow-left"></i> Voltar
+              </button>
               <button type="button" class="btn btn-success btn-save-checklist pull-right">
                 <i class="fa fa-save"></i> Salvar Checklist
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -320,6 +493,106 @@
           </button>
           <button type="button" class="btn btn-danger btn-confirm-delete" id="btnConfirmDelete">
             <i class="fa fa-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Validação do Orçamento -->
+  <div class="modal fade" id="modalBudgetValidation" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color:#f0ad4e; color:#fff;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Atenção</h4>
+        </div>
+        <div class="modal-body">
+          <p id="budgetValidationMessage">Por favor, preencha todos os campos do item.</p>
+          <ul id="budgetValidationList" class="list-group" style="margin-top:10px;">
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-warning" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão do Orçamento -->
+  <div class="modal fade" id="modalBudgetDeleteConfirm" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color:#d9534f; color:#fff;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-trash"></i> Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body text-center">
+          <i class="fa fa-exclamation-triangle" style="font-size:48px; color:#d9534f; margin:15px 0;"></i>
+          <p style="font-size:16px;">Tem certeza que deseja excluir este item?</p>
+          <p id="budgetDeleteItemName" style="font-weight:bold;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            <i class="fa fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="btnConfirmBudgetDelete">
+            <i class="fa fa-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Item do Orçamento -->
+  <div class="modal fade" id="modalBudgetEdit" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color:#337ab7; color:#fff;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-pencil"></i> Editar Item</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit_budget_id">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Quantidade</label>
+                <input type="number" id="edit_budget_qty" class="form-control" min="1">
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="form-group">
+                <label>Descrição da Peça</label>
+                <input type="text" id="edit_budget_part" class="form-control">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Descrição da Mão de Obra</label>
+                <input type="text" id="edit_budget_labor_desc" class="form-control" list="laborDescList">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>Tempo (hh:mm)</label>
+                <input type="text" id="edit_budget_time" class="form-control" placeholder="Ex: 1:25">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>Valor Unit. (R$)</label>
+                <input type="text" id="edit_budget_unit_price" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSaveBudgetEdit">
+            <i class="fa fa-save"></i> Salvar
           </button>
         </div>
       </div>

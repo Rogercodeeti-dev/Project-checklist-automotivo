@@ -1028,6 +1028,14 @@ class AppController extends Action {
 		}
 	}
 
+	public function get_all_laborforces() {
+		$laborforce = Container::getModel('Laborforce');
+		$laborforces = $laborforce->getAllLaborforces();
+		header('Content-Type: application/json');
+		echo json_encode($laborforces ?: []);
+		exit;
+	}
+
 	// ===================== CARGO =====================
 
 	public function save_position() {
