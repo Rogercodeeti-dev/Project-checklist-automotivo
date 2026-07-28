@@ -41,7 +41,19 @@
           <div id="step1" class="wizard-step-content">
             <form id="formChecklistStep1">
               <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label>Nr Ordem de Serviço</label>
+                    <input type="text" name="nr_service_order" id="nr_service_order" class="form-control" placeholder="Nº OS">
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label>Status</label>
+                    <input type="text" name="ds_status" id="ds_status" class="form-control" value="Em atendimento" readonly>
+                  </div>
+                </div>
+                <div class="col-md-2">
                   <div class="form-group">
                     <label>Data do Atendimento</label>
                     <input type="date" name="dt_service" id="dt_service" class="form-control" readonly>
@@ -55,6 +67,15 @@
                 </div>
                 <div class="col-md-4">
                   <div class="form-group">
+                    <label>Atendente</label>
+                    <input type="text" name="nm_attendant" id="nm_attendant" class="form-control" value="<?= htmlspecialchars($_SESSION['nm_login'] ?? '') ?>" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="form-group">
                     <label>Cliente</label>
                     <input type="text" name="nm_client" class="form-control" placeholder="Nome do cliente" required>
                   </div>
@@ -65,9 +86,6 @@
                     <input type="text" name="nr_phone" class="form-control" placeholder="(00) 00000-0000">
                   </div>
                 </div>
-              </div>
-
-              <div class="row">
                 <div class="col-md-4">
                   <div class="form-group">
                     <label>Tipo de Mão de Obra</label>
@@ -76,7 +94,10 @@
                     </select>
                   </div>
                 </div>
-                <div class="col-md-8">
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
                   <div class="form-group">
                     <label>E-mail</label>
                     <input type="email" name="ds_email" class="form-control" placeholder="email@exemplo.com">

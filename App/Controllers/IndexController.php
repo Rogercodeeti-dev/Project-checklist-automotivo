@@ -152,6 +152,7 @@ class IndexController extends Action {
 	}
 
 	public function newchecklist() {
+		session_start();
 		$this->render('newchecklist');
 	}
 
