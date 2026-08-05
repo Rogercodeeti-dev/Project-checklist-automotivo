@@ -144,6 +144,13 @@ class IndexController extends Action {
 		$this->render('positions');
 	}
 
+	public function listproduct() {
+		$product = Container::getModel('Product');
+		$products = $product->getAllProducts();
+		$this->view->products = $products;
+		$this->render('products');
+	}
+
 	public function listrole() {
 		$role = Container::getModel('Role');
 		$roles = $role->getAllRoles();

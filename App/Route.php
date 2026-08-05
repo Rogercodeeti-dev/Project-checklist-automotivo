@@ -339,6 +339,37 @@ class Route extends Bootstrap {
 			'action' => 'get_all_positions'
 		);
 
+		//Produtos
+		$routes['listproduct'] = array(
+			'route' => '/listproduct',
+			'controller' => 'IndexController',
+			'action' => 'listproduct'
+		);
+
+		$routes['save_product'] = array(
+			'route' => '/save_product',
+			'controller' => 'AppController',
+			'action' => 'save_product'
+		);
+
+		$routes['get_product'] = array(
+			'route' => '/get_product',
+			'controller' => 'AppController',
+			'action' => 'get_product'
+		);
+
+		$routes['update_product'] = array(
+			'route' => '/update_product',
+			'controller' => 'AppController',
+			'action' => 'update_product'
+		);
+
+		$routes['delete_product'] = array(
+			'route' => '/delete_product',
+			'controller' => 'AppController',
+			'action' => 'delete_product'
+		);
+
 		//Perfil de Acesso
 		$routes['listrole'] = array(
 			'route' => '/listrole',

@@ -1,0 +1,195 @@
+  <div class="">
+    <style>
+      #tbproducts td, #tbproducts th { vertical-align: middle !important; }
+    </style>
+    <section class="content-header">
+      <p>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalRegProduct">
+          <span class="glyphicon glyphicon-plus "></span> Adicionar Produto
+        </button>
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="row"><div class="col-xs-12"><div class="box"><div class="box-body">
+        <table id="tbproducts" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Unidade</th>
+              <th>Preço Venda</th>
+              <th>Estoque</th>
+              <th>Estoque Mínimo</th>
+              <th class="text-center">Ativo</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->view->products as $product) { ?>
+            <tr>
+              <td><?= htmlspecialchars($product['ds_product']) ?></td>
+              <td><?= htmlspecialchars($product['unit']) ?></td>
+              <td>R$ <?= number_format((float)$product['sale_price'], 2, ',', '.') ?></td>
+              <td><?= (int)$product['stock_quantity'] ?></td>
+              <td><?= (int)$product['minimum_stock'] ?></td>
+              <td class="text-center">
+                <?php if ((int)($product['is_active'] ?? 1) === 1) { ?>
+                  <span class="label label-success">Sim</span>
+                <?php } else { ?>
+                  <span class="label label-danger">Não</span>
+                <?php } ?>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-default btn-xs edit-product" data-id="<?= (int)$product['id'] ?>" title="Editar"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button class="btn btn-danger btn-xs delete-product" data-id="<?= (int)$product['id'] ?>" title="Excluir"><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
+    </section>
+  </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script src="/modules/products.js"></script>
+
+  <div class="modal fade" id="modalRegProduct" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Cadastrar Produto</h4></div>
+        <div class="modal-body">
+          <div id="productCreateAlert" class="alert" style="display:none;"></div>
+          <form id="formProduct" action="/save_product" method="post">
+            <div class="form-group">
+              <label>Descrição do Produto</label>
+              <input type="text" name="ds_product" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Unidade</label>
+              <select name="unit" class="form-control">
+                <option value="UN">Unidade (UN)</option>
+                <option value="KG">Quilograma (KG)</option>
+                <option value="LT">Litro (LT)</option>
+                <option value="MT">Metro (MT)</option>
+                <option value="CX">Caixa (CX)</option>
+                <option value="PC">Peça (PC)</option>
+                <option value="PAR">Par (PAR)</option>
+                <option value="JG">Jogo (JG)</option>
+                <option value="PT">Pacote (PT)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preço de Venda</label>
+              <input type="text" name="sale_price" class="form-control" placeholder="0,00">
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="form-group">
+                  <label>Quantidade em Estoque</label>
+                  <input type="number" name="stock_quantity" class="form-control" value="0" min="0">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="form-group">
+                  <label>Estoque Mínimo</label>
+                  <input type="number" name="minimum_stock" class="form-control" value="0" min="0">
+                </div>
+              </div>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="is_active" value="1" checked> Ativo
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnSaveProduct" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmacao de Exclusao -->
+  <div class="modal fade" id="modalExcluirProduct" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteProductLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="confirmDeleteProductLabel">Confirmar Exclusão</h4>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este produto?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteProductBtn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="modalEditProduct" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content custom-modal-content">
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Editar Produto</h4></div>
+        <div class="modal-body">
+          <div id="productEditAlert" class="alert" style="display:none;"></div>
+          <form id="formEditProduct" action="/update_product" method="post">
+            <input type="hidden" id="edit_product_id" name="id" value="">
+            <div class="form-group">
+              <label>Descrição do Produto</label>
+              <input type="text" id="edit_ds_product" name="ds_product" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Unidade</label>
+              <select name="unit" id="edit_unit" class="form-control">
+                <option value="UN">Unidade (UN)</option>
+                <option value="KG">Quilograma (KG)</option>
+                <option value="LT">Litro (LT)</option>
+                <option value="MT">Metro (MT)</option>
+                <option value="CX">Caixa (CX)</option>
+                <option value="PC">Peça (PC)</option>
+                <option value="PAR">Par (PAR)</option>
+                <option value="JG">Jogo (JG)</option>
+                <option value="PT">Pacote (PT)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preço de Venda</label>
+              <input type="text" id="edit_sale_price" name="sale_price" class="form-control" placeholder="0,00">
+            </div>
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="form-group">
+                  <label>Quantidade em Estoque</label>
+                  <input type="number" id="edit_stock_quantity" name="stock_quantity" class="form-control" min="0">
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="form-group">
+                  <label>Estoque Mínimo</label>
+                  <input type="number" id="edit_minimum_stock" name="minimum_stock" class="form-control" min="0">
+                </div>
+              </div>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" id="edit_is_active" name="is_active" value="1"> Ativo
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnUpdateProduct" class="btn btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>

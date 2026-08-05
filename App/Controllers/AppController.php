@@ -1133,6 +1133,117 @@ class AppController extends Action {
 		exit;
 	}
 
+	// ===================== PRODUTOS =====================
+
+	public function save_product() {
+		try {
+			$ds_product = trim($_POST['ds_product'] ?? '');
+			$unit = trim($_POST['unit'] ?? 'UN');
+			$sale_price = isset($_POST['sale_price']) ? floatval(str_replace(',', '.', $_POST['sale_price'])) : 0;
+			$stock_quantity = isset($_POST['stock_quantity']) ? (int) $_POST['stock_quantity'] : 0;
+			$minimum_stock = isset($_POST['minimum_stock']) ? (int) $_POST['minimum_stock'] : 0;
+			$is_active = isset($_POST['is_active']) ? 1 : 0;
+
+			if ($ds_product === '') {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'A descrição do produto é obrigatória.']);
+				return;
+			}
+
+			$product = Container::getModel('Product');
+
+			$existing = $product->findByProduct($ds_product);
+			if ($existing) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um produto cadastrado com o nome "' . htmlspecialchars($ds_product) . '".']);
+				return;
+			}
+
+			$product->__set('ds_product', $ds_product);
+			$product->__set('unit', $unit);
+			$product->__set('sale_price', $sale_price);
+			$product->__set('stock_quantity', $stock_quantity);
+			$product->__set('minimum_stock', $minimum_stock);
+			$product->__set('is_active', $is_active);
+			$id = $product->save();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true, 'message' => 'Produto cadastrado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um produto cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao salvar produto.']);
+			}
+		}
+		exit;
+	}
+
+	public function get_product() {
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$product = Container::getModel('Product');
+		$data = $product->getById($id);
+		header('Content-Type: application/json');
+		echo json_encode($data ?: []);
+		exit;
+	}
+
+	public function update_product() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			$ds_product = trim($_POST['ds_product'] ?? '');
+			$unit = trim($_POST['unit'] ?? 'UN');
+			$sale_price = isset($_POST['sale_price']) ? floatval(str_replace(',', '.', $_POST['sale_price'])) : 0;
+			$stock_quantity = isset($_POST['stock_quantity']) ? (int) $_POST['stock_quantity'] : 0;
+			$minimum_stock = isset($_POST['minimum_stock']) ? (int) $_POST['minimum_stock'] : 0;
+			$is_active = isset($_POST['is_active']) ? 1 : 0;
+
+			if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'ID inválido.']); return; }
+			if ($ds_product === '') { echo json_encode(['success' => false, 'message' => 'A descrição do produto é obrigatória.']); return; }
+
+			$product = Container::getModel('Product');
+
+			$existing = $product->findByProduct($ds_product);
+			if ($existing && (int)$existing['id'] !== $id) {
+				header('Content-Type: application/json');
+				echo json_encode(['success' => false, 'message' => 'Já existe um produto cadastrado com o nome "' . htmlspecialchars($ds_product) . '".']);
+				return;
+			}
+
+			$product->__set('id', $id);
+			$product->__set('ds_product', $ds_product);
+			$product->__set('unit', $unit);
+			$product->__set('sale_price', $sale_price);
+			$product->__set('stock_quantity', $stock_quantity);
+			$product->__set('minimum_stock', $minimum_stock);
+			$product->__set('is_active', $is_active);
+			$ok = $product->update();
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Produto atualizado com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			if (strpos($e->getMessage(), '1062') !== false) {
+				echo json_encode(['success' => false, 'message' => 'Já existe um produto cadastrado com este nome.']);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Erro ao atualizar produto.']);
+			}
+		}
+	}
+
+	public function delete_product() {
+		try {
+			$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+			if ($id <= 0) { echo json_encode(['success' => false]); return; }
+			$product = Container::getModel('Product');
+			$ok = $product->deleteById($id);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => (bool)$ok, 'message' => 'Produto excluído com sucesso.']);
+		} catch (\Exception $e) {
+			header('Content-Type: application/json');
+			echo json_encode(['success' => false, 'message' => 'Erro ao excluir produto.']);
+		}
+	}
+
 	// ===================== PERFIL DE ACESSO =====================
 
 	public function save_role() {
