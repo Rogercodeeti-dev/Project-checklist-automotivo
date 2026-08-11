@@ -33,6 +33,58 @@ $(document).ready(function() {
 
   setCurrentDateTime();
 
+  // ===================== AUTO-GERAR NR_WORKORDER =====================
+
+  function generateWorkorder() {
+    var now = new Date();
+    var dd = String(now.getDate()).padStart(2, '0');
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var yyyy = now.getFullYear();
+    var HH = String(now.getHours()).padStart(2, '0');
+    var min = String(now.getMinutes()).padStart(2, '0');
+    return dd + mm + yyyy + HH + min;
+  }
+
+  $('#nr_workorder').val(generateWorkorder());
+  $('#nr_workorder_step2').val($('#nr_workorder').val());
+
+  // ===================== SALVAR ABA 2 VIA AJAX =====================
+
+  function saveStep2Data(callback) {
+    $('#nr_workorder_step2').val($('#nr_workorder').val());
+    var formData = $('#formChecklistStep2').serialize();
+    $.ajax({
+      url: '/save_checklist_vehicle',
+      method: 'POST',
+      data: formData,
+      dataType: 'json',
+      success: function(response) {
+        if (typeof callback === 'function') callback(response);
+      },
+      error: function() {
+        if (typeof callback === 'function') callback({ success: false });
+      }
+    });
+  }
+
+  // ===================== SALVAR ABA 1 VIA AJAX =====================
+
+  function saveStep1Data(callback) {
+    var formData = $('#formChecklistStep1').serialize();
+    $.ajax({
+      url: '/save_checklist_attendance',
+      method: 'POST',
+      data: formData,
+      dataType: 'json',
+      success: function(response) {
+        if (typeof callback === 'function') callback(response);
+      },
+      error: function() {
+        if (typeof callback === 'function') callback({ success: false });
+      }
+    });
+  }
+
   // ===================== CARREGAR MÃO DE OBRA =====================
 
   function loadLaborforces() {
@@ -390,12 +442,9 @@ $(document).ready(function() {
     startCamera($('#cameraPreview')[0], 'photo');
   });
 
-  $('.btn-next').click(function() {
-    var currentStep = $(this).data('step');
-    var nextStep = currentStep + 1;
-
+  function validateStep(stepNumber) {
     var missingFields = [];
-    $('#step' + currentStep + ' input[required], #step' + currentStep + ' textarea[required]').each(function() {
+    $('#step' + stepNumber + ' input[required], #step' + stepNumber + ' textarea[required]').each(function() {
       if (!$(this).val().trim()) {
         var label = $(this).closest('.form-group').find('label').text();
         missingFields.push(label);
@@ -412,59 +461,79 @@ $(document).ready(function() {
       });
       $('#validationList').html(listHtml);
       $('#modalValidation').modal('show');
+      return false;
+    }
+    return true;
+  }
+
+  function switchToStep(targetStep) {
+    var currentStep = parseInt($('.wizard-steps li.active').data('step'));
+
+    if (targetStep === currentStep) return;
+
+    // Validar apenas a aba atual ao avançar
+    if (targetStep > currentStep) {
+      if (!validateStep(currentStep)) return;
+    }
+
+    // Salvar aba 1 silenciosamente ao sair
+    if (currentStep === 1 && targetStep !== 1) {
+      saveStep1Data(function() {
+        proceedToStep(currentStep, targetStep);
+      });
       return;
     }
 
-    $('#step' + currentStep).hide();
-    $('#step' + nextStep).show();
-
-    $('.wizard-steps li').removeClass('active');
-    $('.wizard-steps li[data-step="' + nextStep + '"]').addClass('active');
-
-    if (nextStep === 3) {
-      initCameras();
-      updateMediaCounters();
+    // Salvar aba 2 silenciosamente ao sair
+    if (currentStep === 2 && targetStep !== 2) {
+      saveStep2Data(function() {
+        proceedToStep(currentStep, targetStep);
+      });
+      return;
     }
 
+    proceedToStep(currentStep, targetStep);
+  }
+
+  function proceedToStep(currentStep, targetStep) {
     if (currentStep === 3) {
       stopAllCameras();
       stopTimer();
     }
-
-    if (nextStep === 4) {
-      initBudgetCameras();
-    }
-
     if (currentStep === 4) {
       stopAllBudgetCameras();
       stopBudgetTimer();
     }
+
+    $('#step' + currentStep).hide();
+    $('#step' + targetStep).show();
+
+    $('.wizard-steps li').removeClass('active');
+    $('.wizard-steps li[data-step="' + targetStep + '"]').addClass('active');
+
+    if (targetStep === 3) {
+      initCameras();
+      updateMediaCounters();
+    }
+    if (targetStep === 4) {
+      initBudgetCameras();
+    }
+  }
+
+  $('.wizard-steps li').click(function(e) {
+    e.preventDefault();
+    var targetStep = parseInt($(this).data('step'));
+    switchToStep(targetStep);
+  });
+
+  $('.btn-next').click(function() {
+    var currentStep = $(this).data('step');
+    switchToStep(currentStep + 1);
   });
 
   $('.btn-prev').click(function() {
     var currentStep = $(this).data('step');
-    var prevStep = currentStep - 1;
-
-    $('#step' + currentStep).hide();
-    $('#step' + prevStep).show();
-
-    $('.wizard-steps li').removeClass('active');
-    $('.wizard-steps li[data-step="' + prevStep + '"]').addClass('active');
-
-    if (currentStep === 3 || prevStep < 3) {
-      stopAllCameras();
-      stopTimer();
-    }
-
-    if (currentStep === 4) {
-      stopAllBudgetCameras();
-      stopBudgetTimer();
-    }
-
-    if (prevStep === 3) {
-      initCameras();
-      updateMediaCounters();
-    }
+    switchToStep(currentStep - 1);
   });
 
   // ===================== ORÇAMENTO =====================

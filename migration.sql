@@ -60,3 +60,29 @@ ALTER TABLE tb_user ADD CONSTRAINT fk_user_position FOREIGN KEY (id_position) RE
 -- Adicionar coluna de perfil de acesso na tabela tb_user
 ALTER TABLE tb_user ADD COLUMN id_role INT NULL;
 ALTER TABLE tb_user ADD CONSTRAINT fk_user_role FOREIGN KEY (id_role) REFERENCES tb_role(id) ON DELETE SET NULL;
+
+-- Tabela de Checklist
+CREATE TABLE IF NOT EXISTS tb_checklist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nr_workorder VARCHAR(30) NOT NULL COMMENT 'Formato DDMMYYYYHHmm',
+    id_status INT NOT NULL DEFAULT 1,
+    id_user INT NOT NULL,
+    media_id INT NULL,
+    id_laborforce INT NULL,
+    dt_servicedate DATE NULL,
+    hr_servicehours TIMESTAMP NULL,
+    nm_customer VARCHAR(50) NULL,
+    nr_phone VARCHAR(20) NULL,
+    ds_email VARCHAR(100) NULL,
+    ds_testimonialcustomer VARCHAR(500) NULL,
+    nr_vehiclelicenseplate VARCHAR(10) NULL,
+    ds_vehicle VARCHAR(50) NULL,
+    ds_color VARCHAR(30) NULL,
+    nr_year INT NULL,
+    nrKilometer INT NULL,
+    nr_fuellevel TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    dt_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    dt_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_nr_workorder (nr_workorder),
+    CONSTRAINT fk_checklist_user FOREIGN KEY (id_user) REFERENCES tb_user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

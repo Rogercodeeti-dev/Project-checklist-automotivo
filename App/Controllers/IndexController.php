@@ -163,6 +163,118 @@ class IndexController extends Action {
 		$this->render('newchecklist');
 	}
 
+	public function saveChecklistAttendance() {
+		session_start();
+		header('Content-Type: application/json');
+
+		try {
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				echo json_encode(['success' => false, 'message' => 'Método inválido']);
+				return;
+			}
+
+			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			if (empty($nr_workorder)) {
+				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+				return;
+			}
+
+			$checklist = Container::getModel('Checklist');
+			$checklist->__set('nr_workorder', $nr_workorder);
+
+			$existing = $checklist->getByWorkorder();
+
+			$checklist->__set('id_user', $_SESSION['id'] ?? 1);
+
+			if (isset($_POST['id_status']) && $_POST['id_status'] !== '') {
+				$checklist->__set('id_status', (int)$_POST['id_status']);
+			}
+
+			if (isset($_POST['nm_customer']) && $_POST['nm_customer'] !== '') {
+				$checklist->__set('nm_customer', trim($_POST['nm_customer']));
+			}
+			if (isset($_POST['nr_phone']) && $_POST['nr_phone'] !== '') {
+				$checklist->__set('nr_phone', trim($_POST['nr_phone']));
+			}
+			if (isset($_POST['ds_email']) && $_POST['ds_email'] !== '') {
+				$checklist->__set('ds_email', trim($_POST['ds_email']));
+			}
+			if (isset($_POST['ds_testimonialcustomer']) && $_POST['ds_testimonialcustomer'] !== '') {
+				$checklist->__set('ds_testimonialcustomer', trim($_POST['ds_testimonialcustomer']));
+			}
+			if (isset($_POST['id_laborforce']) && $_POST['id_laborforce'] !== '') {
+				$checklist->__set('id_laborforce', (int)$_POST['id_laborforce']);
+			}
+			if (isset($_POST['dt_servicedate']) && $_POST['dt_servicedate'] !== '') {
+				$checklist->__set('dt_servicedate', $_POST['dt_servicedate']);
+			}
+			if (isset($_POST['hr_servicehours']) && $_POST['hr_servicehours'] !== '') {
+				$checklist->__set('hr_servicehours', $_POST['hr_servicehours']);
+			}
+
+			if ($existing) {
+				$result = $checklist->update();
+				echo json_encode(['success' => true, 'message' => 'Dados atualizados com sucesso', 'id' => $existing['id'], 'nr_workorder' => $nr_workorder]);
+			} else {
+				$id = $checklist->save();
+				echo json_encode(['success' => true, 'message' => 'Dados salvos com sucesso', 'id' => $id, 'nr_workorder' => $nr_workorder]);
+			}
+		} catch (\Exception $e) {
+			echo json_encode(['success' => false, 'message' => 'Erro ao salvar: ' . $e->getMessage()]);
+		}
+	}
+
+	public function saveChecklistVehicle() {
+		session_start();
+		header('Content-Type: application/json');
+
+		try {
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				echo json_encode(['success' => false, 'message' => 'Método inválido']);
+				return;
+			}
+
+			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			if (empty($nr_workorder)) {
+				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+				return;
+			}
+
+			$checklist = Container::getModel('Checklist');
+			$checklist->__set('nr_workorder', $nr_workorder);
+
+			$existing = $checklist->getByWorkorder();
+			if (!$existing) {
+				echo json_encode(['success' => false, 'message' => 'Checklist não encontrado. Salve primeiro os dados do atendimento.']);
+				return;
+			}
+
+			if (isset($_POST['nr_vehiclelicenseplate']) && $_POST['nr_vehiclelicenseplate'] !== '') {
+				$checklist->__set('nr_vehiclelicenseplate', trim($_POST['nr_vehiclelicenseplate']));
+			}
+			if (isset($_POST['ds_vehicle']) && $_POST['ds_vehicle'] !== '') {
+				$checklist->__set('ds_vehicle', trim($_POST['ds_vehicle']));
+			}
+			if (isset($_POST['ds_color']) && $_POST['ds_color'] !== '') {
+				$checklist->__set('ds_color', trim($_POST['ds_color']));
+			}
+			if (isset($_POST['nr_year']) && $_POST['nr_year'] !== '') {
+				$checklist->__set('nr_year', (int)$_POST['nr_year']);
+			}
+			if (isset($_POST['nrKilometer']) && $_POST['nrKilometer'] !== '') {
+				$checklist->__set('nrKilometer', (int)$_POST['nrKilometer']);
+			}
+			if (isset($_POST['nr_fuellevel']) && $_POST['nr_fuellevel'] !== '') {
+				$checklist->__set('nr_fuellevel', (int)$_POST['nr_fuellevel']);
+			}
+
+			$result = $checklist->update();
+			echo json_encode(['success' => true, 'message' => 'Dados do veículo salvos com sucesso']);
+		} catch (\Exception $e) {
+			echo json_encode(['success' => false, 'message' => 'Erro ao salvar: ' . $e->getMessage()]);
+		}
+	}
+
 	public function checklistprogress() {
 		$this->render('checklistprogress');
 	}

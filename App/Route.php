@@ -41,6 +41,18 @@ class Route extends Bootstrap {
 			'action' => 'newchecklist'
 		);
 
+		$routes['save_checklist_attendance'] = array(
+			'route' => '/save_checklist_attendance',
+			'controller' => 'IndexController',
+			'action' => 'saveChecklistAttendance'
+		);
+
+		$routes['save_checklist_vehicle'] = array(
+			'route' => '/save_checklist_vehicle',
+			'controller' => 'IndexController',
+			'action' => 'saveChecklistVehicle'
+		);
+
 		$routes['checklistprogress'] = array(
 			'route' => '/checklistprogress',
 			'controller' => 'IndexController',
