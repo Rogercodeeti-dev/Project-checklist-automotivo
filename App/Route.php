@@ -53,6 +53,12 @@ class Route extends Bootstrap {
 			'action' => 'saveChecklistVehicle'
 		);
 
+		$routes['save_checklist_media'] = array(
+			'route' => '/save_checklist_media',
+			'controller' => 'IndexController',
+			'action' => 'saveChecklistMedia'
+		);
+
 		$routes['checklistprogress'] = array(
 			'route' => '/checklistprogress',
 			'controller' => 'IndexController',

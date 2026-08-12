@@ -166,6 +166,9 @@ class IndexController extends Action {
 	public function saveChecklistAttendance() {
 		session_start();
 		header('Content-Type: application/json');
+		// ini_set('display_errors', 1);
+		// ini_set('display_startup_errors', 1);
+		// error_reporting(E_ALL);
 
 		try {
 			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -174,6 +177,7 @@ class IndexController extends Action {
 			}
 
 			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			var_dump($_POST['nr_workorder']); // Debugging line
 			if (empty($nr_workorder)) {
 				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
 				return;
@@ -312,17 +316,129 @@ class IndexController extends Action {
 
 	//Update classroom
 	public function update_classroom() {
-		
+
 		$id = $_POST['id'];
 		$edit_ds_classroom = $_POST['ds_classroom'];
-		
+
 		$classroom = Container::getModel('Classroom');
 		$classroom->__set('id', $id);
 		$classroom->__set('ds_class', $edit_ds_classroom);
-		
+
 		$resultado = $classroom->updateClassroom();
 
 		echo json_encode(['status' => $resultado ? 'success' : 'fail']);
+	}
+
+	public function saveChecklistMedia() {
+		session_start();
+		header('Content-Type: application/json');
+
+		try {
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				echo json_encode(['success' => false, 'message' => 'Método inválido']);
+				return;
+			}
+
+			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			if (empty($nr_workorder)) {
+				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+				return;
+			}
+
+			$checklist = Container::getModel('Checklist');
+			$checklist->__set('nr_workorder', $nr_workorder);
+			$existing = $checklist->getByWorkorder();
+
+			if (!$existing) {
+				echo json_encode(['success' => false, 'message' => 'Checklist não encontrado. Salve primeiro os dados do atendimento.']);
+				return;
+			}
+
+			$uploadDir = dirname(__DIR__, 2) . '/public/uploads/media/';
+			if (!is_dir($uploadDir)) {
+				mkdir($uploadDir, 0755, true);
+			}
+
+			// Remover mídias anteriores deste checklist para evitar duplicação
+			$mediaModel = Container::getModel('ChecklistMedia');
+			$mediaModel->__set('nr_workorder', $nr_workorder);
+			$existingMedia = $mediaModel->getByWorkorder();
+			foreach ($existingMedia as $old) {
+				$oldFile = dirname(__DIR__, 2) . '/public' . $old['file_path'];
+				if (file_exists($oldFile)) {
+					unlink($oldFile);
+				}
+			}
+			$mediaModel->deleteByWorkorder();
+
+			$savedMedia = [];
+			$lastMediaId = null;
+
+			// Processar fotos
+			if (!empty($_FILES['photos'])) {
+				$photos = $_FILES['photos'];
+				$photoCount = is_array($photos['name']) ? count($photos['name']) : 0;
+
+				for ($i = 0; $i < $photoCount; $i++) {
+					if ($photos['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+					$originalName = $photos['name'][$i];
+					$ext = pathinfo($originalName, PATHINFO_EXTENSION) ?: 'jpg';
+					$fileName = uniqid('photo_') . '.' . $ext;
+					$targetPath = $uploadDir . $fileName;
+
+					if (move_uploaded_file($photos['tmp_name'][$i], $targetPath)) {
+						$media = Container::getModel('ChecklistMedia');
+						$media->__set('nr_workorder', $nr_workorder);
+						$media->__set('media_type', 'photo');
+						$media->__set('file_path', '/uploads/media/' . $fileName);
+						$media->__set('original_name', $originalName);
+						$media->__set('ds_description', $_POST['photo_descriptions'][$i] ?? 'Foto do checklist');
+						$media->__set('file_size', $photos['size'][$i]);
+						$media->__set('mime_type', $photos['type'][$i]);
+						$lastMediaId = $media->save();
+						$savedMedia[] = ['media_id' => $lastMediaId, 'type' => 'photo', 'name' => $originalName];
+					}
+				}
+			}
+
+			// Processar vídeos
+			if (!empty($_FILES['videos'])) {
+				$videos = $_FILES['videos'];
+				$videoCount = is_array($videos['name']) ? count($videos['name']) : 0;
+
+				for ($i = 0; $i < $videoCount; $i++) {
+					if ($videos['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+					$originalName = $videos['name'][$i];
+					$ext = pathinfo($originalName, PATHINFO_EXTENSION) ?: 'webm';
+					$fileName = uniqid('video_') . '.' . $ext;
+					$targetPath = $uploadDir . $fileName;
+
+					if (move_uploaded_file($videos['tmp_name'][$i], $targetPath)) {
+						$media = Container::getModel('ChecklistMedia');
+						$media->__set('nr_workorder', $nr_workorder);
+						$media->__set('media_type', 'video');
+						$media->__set('file_path', '/uploads/media/' . $fileName);
+						$media->__set('original_name', $originalName);
+						$media->__set('ds_description', $_POST['video_descriptions'][$i] ?? 'Vídeo do checklist');
+						$media->__set('file_size', $videos['size'][$i]);
+						$media->__set('mime_type', $videos['type'][$i]);
+						$lastMediaId = $media->save();
+						$savedMedia[] = ['media_id' => $lastMediaId, 'type' => 'video', 'name' => $originalName];
+					}
+				}
+			}
+
+			echo json_encode([
+				'success' => true,
+				'message' => count($savedMedia) . ' mídia(s) salva(s) com sucesso',
+				'media' => $savedMedia
+			]);
+
+		} catch (\Exception $e) {
+			echo json_encode(['success' => false, 'message' => 'Erro ao salvar mídia: ' . $e->getMessage()]);
+		}
 	}
 
 }

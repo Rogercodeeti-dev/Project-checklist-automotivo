@@ -67,21 +67,107 @@ $(document).ready(function() {
     });
   }
 
+  // ===================== SALVAR ABA 3 (MÍDIA) VIA AJAX =====================
+
+  function saveStep3Media(callback) {
+    if (photos.length === 0 && videos.length === 0) {
+      if (typeof callback === 'function') callback({ success: true, message: 'Nenhuma mídia para salvar' });
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('nr_workorder', $('#nr_workorder').val());
+
+    var pendingUploads = photos.length + videos.length;
+    var uploadStarted = false;
+
+    function checkComplete() {
+      pendingUploads--;
+      if (pendingUploads <= 0 && uploadStarted) {
+        doUpload();
+      }
+    }
+
+    function dataURLtoBlob(dataURL) {
+      var parts = dataURL.split(',');
+      var mime = parts[0].match(/:(.*?);/)[1];
+      var binary = atob(parts[1]);
+      var array = [];
+      for (var i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+      }
+      return new Blob([new Uint8Array(array)], { type: mime });
+    }
+
+    // Converter fotos (base64) para blobs
+    for (var i = 0; i < photos.length; i++) {
+      var photo = photos[i];
+      var blob = dataURLtoBlob(photo.data);
+      formData.append('photos[]', blob, 'foto_' + (i + 1) + '.jpg');
+      formData.append('photo_descriptions[]', 'Foto ' + (i + 1) + ' - ' + photo.timestamp);
+      checkComplete();
+    }
+
+    // Converter vídeos (blob) para file
+    for (var j = 0; j < videos.length; j++) {
+      var video = videos[j];
+      if (video.blob) {
+        formData.append('videos[]', video.blob, 'video_' + (j + 1) + '.webm');
+        formData.append('video_descriptions[]', 'Vídeo ' + (j + 1) + ' - ' + video.timestamp);
+      }
+      checkComplete();
+    }
+
+    function doUpload() {
+      $.ajax({
+        url: '/save_checklist_media',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Mídia salva:', response);
+          if (typeof callback === 'function') callback(response);
+        },
+        error: function(xhr, status, error) {
+          console.error('Erro ao salvar mídia:', error);
+          if (typeof callback === 'function') callback({ success: false });
+        }
+      });
+    }
+
+    // Se não houve conversão async, fazer upload imediatamente
+    if (pendingUploads <= 0) {
+      doUpload();
+    }
+  }
+
   // ===================== SALVAR ABA 1 VIA AJAX =====================
 
   function saveStep1Data(callback) {
     var formData = $('#formChecklistStep1').serialize();
+   
     $.ajax({
       url: '/save_checklist_attendance',
       method: 'POST',
       data: formData,
       dataType: 'json',
-      success: function(response) {
-        if (typeof callback === 'function') callback(response);
-      },
-      error: function() {
-        if (typeof callback === 'function') callback({ success: false });
-      }
+       success: function(response) {
+            console.log('Resposta do servidor:', response);
+
+            if (typeof callback === 'function') {
+                callback(response);
+            }
+        },
+       error: function(xhr, status, error) {
+            console.error('Erro AJAX:', error);
+            console.error('Resposta:', xhr.responseText);
+
+            if (typeof callback === 'function') {
+                callback({ success: false });
+            }
+        }
     });
   }
 
@@ -444,13 +530,13 @@ $(document).ready(function() {
 
   function validateStep(stepNumber) {
     var missingFields = [];
-    $('#step' + stepNumber + ' input[required], #step' + stepNumber + ' textarea[required]').each(function() {
-      if (!$(this).val().trim()) {
+    $('#step' + stepNumber + ' input[required], #step' + stepNumber + ' textarea[required], #step' + stepNumber + ' select[required]').each(function() {
+      if (!$(this).val() || !$(this).val().trim()) {
         var label = $(this).closest('.form-group').find('label').text();
         missingFields.push(label);
-        $(this).parent().addClass('has-error');
+        $(this).closest('.form-group').addClass('has-error');
       } else {
-        $(this).parent().removeClass('has-error');
+        $(this).closest('.form-group').removeClass('has-error');
       }
     });
 
@@ -487,6 +573,14 @@ $(document).ready(function() {
     // Salvar aba 2 silenciosamente ao sair
     if (currentStep === 2 && targetStep !== 2) {
       saveStep2Data(function() {
+        proceedToStep(currentStep, targetStep);
+      });
+      return;
+    }
+
+    // Salvar aba 3 (mídia) silenciosamente ao sair
+    if (currentStep === 3 && targetStep !== 3) {
+      saveStep3Media(function() {
         proceedToStep(currentStep, targetStep);
       });
       return;

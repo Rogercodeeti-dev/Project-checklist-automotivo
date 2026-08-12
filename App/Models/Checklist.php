@@ -10,7 +10,6 @@ class Checklist extends Model {
     protected ?string $nr_workorder = null;
     protected ?int $id_status = null;
     protected ?int $id_user = null;
-    protected ?int $media_id = null;
     protected ?int $id_laborforce = null;
     protected ?string $dt_servicedate = null;
     protected ?string $hr_servicehours = null;
@@ -41,7 +40,6 @@ class Checklist extends Model {
             nr_workorder,
             id_status,
             id_user,
-            media_id,
             id_laborforce,
             dt_servicedate,
             hr_servicehours,
@@ -61,7 +59,6 @@ class Checklist extends Model {
             :nr_workorder,
             :id_status,
             :id_user,
-            :media_id,
             :id_laborforce,
             :dt_servicedate,
             :hr_servicehours,
@@ -81,7 +78,6 @@ class Checklist extends Model {
         $stmt->bindValue(':nr_workorder', $this->__get('nr_workorder'));
         $stmt->bindValue(':id_status', $this->__get('id_status') ?? 1, \PDO::PARAM_INT);
         $stmt->bindValue(':id_user', $this->__get('id_user'), \PDO::PARAM_INT);
-        $stmt->bindValue(':media_id', $this->__get('media_id') ?: null, \PDO::PARAM_INT);
         $stmt->bindValue(':id_laborforce', $this->__get('id_laborforce') ?: null, \PDO::PARAM_INT);
         $stmt->bindValue(':dt_servicedate', $this->__get('dt_servicedate') ?: null);
         $stmt->bindValue(':hr_servicehours', $this->__get('hr_servicehours') ?: null);
@@ -108,7 +104,6 @@ class Checklist extends Model {
             'nr_workorder' => 'nr_workorder',
             'id_status' => 'id_status',
             'id_user' => 'id_user',
-            'media_id' => 'media_id',
             'id_laborforce' => 'id_laborforce',
             'dt_servicedate' => 'dt_servicedate',
             'hr_servicehours' => 'hr_servicehours',
