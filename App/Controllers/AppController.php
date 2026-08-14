@@ -1479,5 +1479,158 @@ class AppController extends Action {
 		echo json_encode($grouped ?: []);
 		exit;
 	}
+
+	// ===================== PRODUTOS (LISTAGEM) =====================
+
+	public function get_all_products() {
+		$product = Container::getModel('Product');
+		$products = $product->getAllProducts();
+		header('Content-Type: application/json');
+		echo json_encode($products ?: []);
+		exit;
+	}
+
+	// ===================== CHECKLIST ITEM (ORÇAMENTO) =====================
+
+	public function save_checklist_items() {
+		session_start();
+		header('Content-Type: application/json');
+
+		try {
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				echo json_encode(['success' => false, 'message' => 'Método inválido']);
+				return;
+			}
+
+			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			if (empty($nr_workorder)) {
+				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+				return;
+			}
+
+			$checklist = Container::getModel('Checklist');
+			$checklist->__set('nr_workorder', $nr_workorder);
+			$existing = $checklist->getByWorkorder();
+
+			if (!$existing) {
+				echo json_encode(['success' => false, 'message' => 'Checklist não encontrado.']);
+				return;
+			}
+
+			$itemsJson = $_POST['items'] ?? '[]';
+			$items = json_decode($itemsJson, true);
+
+			$itemModel = Container::getModel('ChecklistItem');
+			$itemModel->__set('nr_workorder', $nr_workorder);
+			$itemModel->deleteByWorkorder();
+
+			$savedItems = [];
+
+			foreach ($items as $item) {
+				$ci = Container::getModel('ChecklistItem');
+				$ci->__set('nr_workorder', $nr_workorder);
+				$ci->__set('product_id', !empty($item['product_id']) ? (int) $item['product_id'] : null);
+				$ci->__set('quantity', !empty($item['quantity']) ? (float) $item['quantity'] : null);
+				$ci->__set('unit_price', !empty($item['unit_price']) ? (float) $item['unit_price'] : null);
+				$ci->__set('labor_time_minutes', !empty($item['labor_time_minutes']) ? (int) $item['labor_time_minutes'] : null);
+				$ci->__set('media_id', !empty($item['media_id']) ? (int) $item['media_id'] : null);
+				$itemId = $ci->save();
+				$savedItems[] = ['item_id' => $itemId];
+			}
+
+			echo json_encode([
+				'success' => true,
+				'message' => count($savedItems) . ' item(ns) salvo(s) com sucesso',
+				'items' => $savedItems
+			]);
+
+		} catch (\Exception $e) {
+			echo json_encode(['success' => false, 'message' => 'Erro ao salvar itens: ' . $e->getMessage()]);
+		}
+	}
+
+	// ===================== CHECKLIST ITEM MEDIA =====================
+
+	public function save_checklist_item_media() {
+		session_start();
+		header('Content-Type: application/json');
+
+		try {
+			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+				echo json_encode(['success' => false, 'message' => 'Método inválido']);
+				return;
+			}
+
+			$uploadDir = dirname(__DIR__, 2) . '/public/uploads/media/';
+			if (!is_dir($uploadDir)) {
+				mkdir($uploadDir, 0755, true);
+			}
+
+			$savedMedia = [];
+
+			// Processar fotos
+			if (!empty($_FILES['photos'])) {
+				$photos = $_FILES['photos'];
+				$photoCount = is_array($photos['name']) ? count($photos['name']) : 0;
+
+				for ($i = 0; $i < $photoCount; $i++) {
+					if ($photos['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+					$originalName = $photos['name'][$i];
+					$ext = pathinfo($originalName, PATHINFO_EXTENSION) ?: 'jpg';
+					$fileName = uniqid('item_photo_') . '.' . $ext;
+					$targetPath = $uploadDir . $fileName;
+
+					if (move_uploaded_file($photos['tmp_name'][$i], $targetPath)) {
+						$media = Container::getModel('ChecklistItemMedia');
+						$media->__set('media_type', 'photo');
+						$media->__set('file_path', '/uploads/media/' . $fileName);
+						$media->__set('original_name', $originalName);
+						$media->__set('ds_description', $_POST['photo_descriptions'][$i] ?? 'Foto do orçamento');
+						$media->__set('file_size', $photos['size'][$i]);
+						$media->__set('mime_type', $photos['type'][$i]);
+						$mediaId = $media->save();
+						$savedMedia[] = ['media_id' => $mediaId, 'type' => 'photo', 'name' => $originalName];
+					}
+				}
+			}
+
+			// Processar vídeos
+			if (!empty($_FILES['videos'])) {
+				$videos = $_FILES['videos'];
+				$videoCount = is_array($videos['name']) ? count($videos['name']) : 0;
+
+				for ($i = 0; $i < $videoCount; $i++) {
+					if ($videos['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+					$originalName = $videos['name'][$i];
+					$ext = pathinfo($originalName, PATHINFO_EXTENSION) ?: 'webm';
+					$fileName = uniqid('item_video_') . '.' . $ext;
+					$targetPath = $uploadDir . $fileName;
+
+					if (move_uploaded_file($videos['tmp_name'][$i], $targetPath)) {
+						$media = Container::getModel('ChecklistItemMedia');
+						$media->__set('media_type', 'video');
+						$media->__set('file_path', '/uploads/media/' . $fileName);
+						$media->__set('original_name', $originalName);
+						$media->__set('ds_description', $_POST['video_descriptions'][$i] ?? 'Vídeo do orçamento');
+						$media->__set('file_size', $videos['size'][$i]);
+						$media->__set('mime_type', $videos['type'][$i]);
+						$mediaId = $media->save();
+						$savedMedia[] = ['media_id' => $mediaId, 'type' => 'video', 'name' => $originalName];
+					}
+				}
+			}
+
+			echo json_encode([
+				'success' => true,
+				'message' => count($savedMedia) . ' mídia(s) salva(s) com sucesso',
+				'media' => $savedMedia
+			]);
+
+		} catch (\Exception $e) {
+			echo json_encode(['success' => false, 'message' => 'Erro ao salvar mídia: ' . $e->getMessage()]);
+		}
+	}
 }
 ?>

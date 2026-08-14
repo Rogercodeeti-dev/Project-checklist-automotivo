@@ -218,7 +218,7 @@ class IndexController extends Action {
 
 			if ($existing) {
 				$result = $checklist->update();
-				echo json_encode(['success' => true, 'message' => 'Dados atualizados com sucesso', 'id' => $existing['id'], 'nr_workorder' => $nr_workorder]);
+				echo json_encode(['success' => true, 'message' => 'Dados atualizados com sucesso', 'id' => $existing['item_id'], 'nr_workorder' => $nr_workorder]);
 			} else {
 				$id = $checklist->save();
 				echo json_encode(['success' => true, 'message' => 'Dados salvos com sucesso', 'id' => $id, 'nr_workorder' => $nr_workorder]);

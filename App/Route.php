@@ -59,6 +59,18 @@ class Route extends Bootstrap {
 			'action' => 'saveChecklistMedia'
 		);
 
+		$routes['save_checklist_items'] = array(
+			'route' => '/save_checklist_items',
+			'controller' => 'AppController',
+			'action' => 'save_checklist_items'
+		);
+
+		$routes['save_checklist_item_media'] = array(
+			'route' => '/save_checklist_item_media',
+			'controller' => 'AppController',
+			'action' => 'save_checklist_item_media'
+		);
+
 		$routes['checklistprogress'] = array(
 			'route' => '/checklistprogress',
 			'controller' => 'IndexController',
@@ -358,6 +370,12 @@ class Route extends Bootstrap {
 		);
 
 		//Produtos
+		$routes['get_all_products'] = array(
+			'route' => '/get_all_products',
+			'controller' => 'AppController',
+			'action' => 'get_all_products'
+		);
+
 		$routes['listproduct'] = array(
 			'route' => '/listproduct',
 			'controller' => 'IndexController',

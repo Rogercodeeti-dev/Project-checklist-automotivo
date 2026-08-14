@@ -192,6 +192,49 @@ $(document).ready(function() {
 
   loadLaborforces();
 
+  // ===================== CARREGAR PRODUTOS =====================
+
+  function loadProducts() {
+    $.getJSON('/get_all_products', function(products) {
+      var $select = $('#budget_part');
+      var $editSelect = $('#edit_budget_part');
+      $select.find('option:gt(0)').remove();
+      $editSelect.find('option:gt(0)').remove();
+      $.each(products, function(i, p) {
+        var price = parseFloat(p.sale_price || 0).toFixed(2).replace('.', ',');
+        var option = '<option value="' + p.id + '" data-name="' + escapeHtml(p.ds_product) +
+          '" data-unit="' + escapeHtml(p.unit || '') +
+          '" data-price="' + (p.sale_price || 0) + '">' +
+          p.ds_product + ' (' + (p.unit || 'UN') + ') - R$ ' + price +
+          '</option>';
+        $select.append(option);
+        $editSelect.append(option);
+      });
+    }).fail(function() {
+      console.error('Erro ao carregar produtos.');
+    });
+  }
+
+  loadProducts();
+
+  $('#budget_part').on('change', function() {
+    var $option = $(this).find('option:selected');
+    if ($option.val()) {
+      var price = parseFloat($option.data('price')) || 0;
+      $('#budget_unit_price').val(price.toFixed(2).replace('.', ','));
+    } else {
+      $('#budget_unit_price').val('');
+    }
+  });
+
+  $('#edit_budget_part').on('change', function() {
+    var $option = $(this).find('option:selected');
+    if ($option.val()) {
+      var price = parseFloat($option.data('price')) || 0;
+      $('#edit_budget_unit_price').val(price.toFixed(2).replace('.', ','));
+    }
+  });
+
   function updateFuelGauge(value) {
     var $gaugeFill = $('#fuelGaugeFill');
     var $percentage = $('#fuelPercentage');
@@ -586,6 +629,16 @@ $(document).ready(function() {
       return;
     }
 
+    // Salvar aba 4 (orçamento + mídia das peças) silenciosamente ao sair
+    if (currentStep === 4 && targetStep !== 4) {
+      saveStep4Budget(function() {
+        saveStep4BudgetMedia(function() {
+          proceedToStep(currentStep, targetStep);
+        });
+      });
+      return;
+    }
+
     proceedToStep(currentStep, targetStep);
   }
 
@@ -673,17 +726,20 @@ $(document).ready(function() {
 
   function addBudgetItem() {
     var qty = parseInt($('#budget_qty').val()) || 0;
-    var part = $('#budget_part').val().trim();
+    var $selectedOption = $('#budget_part option:selected');
+    var productId = $selectedOption.val() || null;
+    var part = productId ? $selectedOption.data('name') || '' : '';
     var laborDesc = $('#budget_labor_desc').val().trim();
     var timeStr = $('#budget_time').val().trim();
     var unitPriceStr = $('#budget_unit_price').val().trim().replace(',', '.');
     var unitPrice = parseFloat(unitPriceStr) || 0;
+    var parsedTime = parseTimeToHours(timeStr);
 
     var missing = [];
     if (qty <= 0) missing.push('Quantidade');
-    if (!part) missing.push('Descrição da Peça');
+    if (!productId) missing.push('Descrição da Peça');
     if (!laborDesc) missing.push('Descrição da Mão de Obra');
-    if (!timeStr || parseTimeToHours(timeStr).total <= 0) missing.push('Tempo');
+    if (!timeStr || parsedTime.total <= 0) missing.push('Tempo');
     if (unitPrice <= 0) missing.push('Valor Unitário da Peça');
 
     if (missing.length > 0) {
@@ -692,13 +748,16 @@ $(document).ready(function() {
     }
 
     var laborValue = calculateLaborValue(timeStr);
+    var laborTimeMinutes = parsedTime.h * 60 + parsedTime.m;
 
     budgetItems.push({
       id: Date.now(),
+      product_id: productId,
       qty: qty,
       part: part,
       laborDesc: laborDesc,
       time: timeStr,
+      laborTimeMinutes: laborTimeMinutes,
       laborValue: laborValue,
       unitPrice: unitPrice,
       totalPart: qty * unitPrice
@@ -740,7 +799,7 @@ $(document).ready(function() {
     if (!item) return;
     $('#edit_budget_id').val(item.id);
     $('#edit_budget_qty').val(item.qty);
-    $('#edit_budget_part').val(item.part);
+    $('#edit_budget_part').val(item.product_id || '');
     $('#edit_budget_labor_desc').val(item.laborDesc);
     $('#edit_budget_time').val(item.time);
     $('#edit_budget_unit_price').val(item.unitPrice.toString().replace('.', ','));
@@ -750,17 +809,20 @@ $(document).ready(function() {
   $('#btnSaveBudgetEdit').click(function() {
     var id = parseInt($('#edit_budget_id').val());
     var qty = parseInt($('#edit_budget_qty').val()) || 0;
-    var part = $('#edit_budget_part').val().trim();
+    var $selectedOption = $('#edit_budget_part option:selected');
+    var productId = $selectedOption.val() || null;
+    var part = productId ? $selectedOption.data('name') || '' : '';
     var laborDesc = $('#edit_budget_labor_desc').val().trim();
     var timeStr = $('#edit_budget_time').val().trim();
     var unitPriceStr = $('#edit_budget_unit_price').val().trim().replace(',', '.');
     var unitPrice = parseFloat(unitPriceStr) || 0;
+    var parsedTime = parseTimeToHours(timeStr);
 
     var missing = [];
     if (qty <= 0) missing.push('Quantidade');
-    if (!part) missing.push('Descrição da Peça');
+    if (!productId) missing.push('Descrição da Peça');
     if (!laborDesc) missing.push('Descrição da Mão de Obra');
-    if (!timeStr || parseTimeToHours(timeStr).total <= 0) missing.push('Tempo');
+    if (!timeStr || parsedTime.total <= 0) missing.push('Tempo');
     if (unitPrice <= 0) missing.push('Valor Unitário da Peça');
 
     if (missing.length > 0) {
@@ -769,13 +831,16 @@ $(document).ready(function() {
     }
 
     var laborValue = calculateLaborValue(timeStr);
+    var laborTimeMinutes = parsedTime.h * 60 + parsedTime.m;
 
     for (var i = 0; i < budgetItems.length; i++) {
       if (budgetItems[i].id === id) {
+        budgetItems[i].product_id = productId;
         budgetItems[i].qty = qty;
         budgetItems[i].part = part;
         budgetItems[i].laborDesc = laborDesc;
         budgetItems[i].time = timeStr;
+        budgetItems[i].laborTimeMinutes = laborTimeMinutes;
         budgetItems[i].laborValue = laborValue;
         budgetItems[i].unitPrice = unitPrice;
         budgetItems[i].totalPart = qty * unitPrice;
@@ -1057,62 +1122,114 @@ $(document).ready(function() {
     startBudgetCamera($('#budgetCameraPreview')[0], 'photo');
   });
 
+  // ===================== SALVAR ABA 4 (ITENS ORÇAMENTO) VIA AJAX =====================
+
+  function saveStep4Budget(callback) {
+    if (budgetItems.length === 0) {
+      if (typeof callback === 'function') callback({ success: true, message: 'Nenhum item de orçamento' });
+      return;
+    }
+
+    var items = budgetItems.map(function(item) {
+      return {
+        product_id: item.product_id,
+        quantity: item.qty,
+        unit_price: item.unitPrice,
+        labor_time_minutes: item.laborTimeMinutes || 0
+      };
+    });
+
+    $.ajax({
+      url: '/save_checklist_items',
+      method: 'POST',
+      data: {
+        nr_workorder: $('#nr_workorder').val(),
+        items: JSON.stringify(items)
+      },
+      dataType: 'json',
+      success: function(response) {
+        console.log('Itens do orçamento salvos:', response);
+        if (typeof callback === 'function') callback(response);
+      },
+      error: function(xhr, status, error) {
+        console.error('Erro ao salvar itens do orçamento:', error);
+        if (typeof callback === 'function') callback({ success: false });
+      }
+    });
+  }
+
+  function saveStep4BudgetMedia(callback) {
+    if (budgetPhotos.length === 0 && budgetVideos.length === 0) {
+      if (typeof callback === 'function') callback({ success: true, message: 'Nenhuma mídia de peças' });
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('nr_workorder', $('#nr_workorder').val());
+
+    for (var i = 0; i < budgetPhotos.length; i++) {
+      var photo = budgetPhotos[i];
+      var blob = dataURLtoBlob(photo.data);
+      formData.append('photos[]', blob, 'peca_foto_' + (i + 1) + '.jpg');
+      formData.append('photo_descriptions[]', 'Foto Peça ' + (i + 1) + ' - ' + photo.timestamp);
+    }
+
+    for (var j = 0; j < budgetVideos.length; j++) {
+      var video = budgetVideos[j];
+      if (video.blob) {
+        formData.append('videos[]', video.blob, 'peca_video_' + (j + 1) + '.webm');
+        formData.append('video_descriptions[]', 'Vídeo Peça ' + (j + 1) + ' - ' + video.timestamp);
+      }
+    }
+
+    $.ajax({
+      url: '/save_checklist_item_media',
+      method: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      dataType: 'json',
+      success: function(response) {
+        console.log('Mídia das peças salva:', response);
+        if (typeof callback === 'function') callback(response);
+      },
+      error: function(xhr, status, error) {
+        console.error('Erro ao salvar mídia das peças:', error);
+        if (typeof callback === 'function') callback({ success: false });
+      }
+    });
+  }
+
+  function dataURLtoBlob(dataURL) {
+    var parts = dataURL.split(',');
+    var mime = parts[0].match(/:(.*?);/)[1];
+    var binary = atob(parts[1]);
+    var array = [];
+    for (var i = 0; i < binary.length; i++) {
+      array.push(binary.charCodeAt(i));
+    }
+    return new Blob([new Uint8Array(array)], { type: mime });
+  }
+
   // ===================== SALVAR CHECKLIST =====================
 
   $('.btn-save-checklist').click(function() {
-    var formData = {};
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Salvando...');
 
-    $('#formChecklistStep1, #formChecklistStep2').each(function() {
-      var stepData = $(this).serializeArray();
-      $.each(stepData, function(i, field) {
-        formData[field.name] = field.value;
+    // Salvar etapa 1 → 2 → 3 mídia → 4 itens → 4 mídia → finalizar
+    saveStep1Data(function() {
+      saveStep2Data(function() {
+        saveStep3Media(function() {
+          saveStep4Budget(function() {
+            saveStep4BudgetMedia(function() {
+              $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Salvar Checklist');
+              alert('Checklist salvo com sucesso!');
+            });
+          });
+        });
       });
     });
-
-    formData.total_photos = photos.length;
-    formData.total_videos = videos.length;
-    formData.photos = photos.map(function(p) {
-      return {
-        timestamp: p.timestamp,
-        data: p.data
-      };
-    });
-    formData.videos = videos.map(function(v) {
-      return {
-        timestamp: v.timestamp,
-        duration: v.duration
-      };
-    });
-
-    formData.budget_items = budgetItems;
-    var totalParts = budgetItems.reduce(function(sum, item) { return sum + item.totalPart; }, 0);
-    var totalLabor = budgetItems.reduce(function(sum, item) { return sum + item.laborValue; }, 0);
-    formData.budget_total_parts = totalParts;
-    formData.budget_total_labor = totalLabor;
-    formData.budget_total_geral = totalParts + totalLabor;
-
-    formData.budget_photos = budgetPhotos.map(function(p) {
-      return { timestamp: p.timestamp, data: p.data };
-    });
-    formData.budget_videos = budgetVideos.map(function(v) {
-      return { timestamp: v.timestamp, duration: v.duration };
-    });
-
-    console.log('Dados do checklist:', formData);
-    alert('Checklist salvo com sucesso!\n\nFotos: ' + photos.length + '\nV\u00eddeos: ' + videos.length +
-      '\nItens or\u00e7amento: ' + budgetItems.length +
-      '\nFotos pe\u00e7as: ' + budgetPhotos.length +
-      '\nV\u00eddeos pe\u00e7as: ' + budgetVideos.length +
-      '\nTotal or\u00e7amento: ' + formatCurrency(totalParts + totalLabor) + '\n\n(Dados no console)');
-
-    // $.ajax({
-    //   url: '/save_checklist',
-    //   method: 'POST',
-    //   data: formData,
-    //   success: function(response) {
-    //     alert('Checklist salvo com sucesso!');
-    //   }
-    // });
   });
 
   $(window).on('beforeunload', function() {
