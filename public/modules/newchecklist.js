@@ -1222,9 +1222,13 @@ $(document).ready(function() {
       saveStep2Data(function() {
         saveStep3Media(function() {
           saveStep4Budget(function() {
-            saveStep4BudgetMedia(function() {
-              $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Salvar Checklist');
-              alert('Checklist salvo com sucesso!');
+            saveStep4BudgetMedia(function(response) {
+              $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Finalizar Checklist');
+              if (response && response.success) {
+                toastr.success('Checklist finalizado com sucesso!');
+              } else {
+                toastr.error(response.message || 'Erro ao finalizar checklist.');
+              }
             });
           });
         });

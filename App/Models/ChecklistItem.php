@@ -8,7 +8,6 @@ class ChecklistItem extends Model {
 
     protected ?int $item_id = null;
     protected ?string $nr_workorder = null;
-    protected ?int $media_id = null;
     protected ?int $product_id = null;
     protected ?float $quantity = null;
     protected ?float $unit_price = null;
@@ -26,7 +25,6 @@ class ChecklistItem extends Model {
         $query = "INSERT INTO tb_checklist_item
         (
             nr_workorder,
-            media_id,
             product_id,
             quantity,
             unit_price,
@@ -35,7 +33,6 @@ class ChecklistItem extends Model {
         VALUES
         (
             :nr_workorder,
-            :media_id,
             :product_id,
             :quantity,
             :unit_price,
@@ -44,7 +41,6 @@ class ChecklistItem extends Model {
 
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':nr_workorder', $this->__get('nr_workorder'));
-        $stmt->bindValue(':media_id', $this->__get('media_id') ?: null, \PDO::PARAM_INT);
         $stmt->bindValue(':product_id', $this->__get('product_id') ?: null, \PDO::PARAM_INT);
         $stmt->bindValue(':quantity', $this->__get('quantity') ?: null);
         $stmt->bindValue(':unit_price', $this->__get('unit_price') ?: null);

@@ -1533,7 +1533,6 @@ class AppController extends Action {
 				$ci->__set('quantity', !empty($item['quantity']) ? (float) $item['quantity'] : null);
 				$ci->__set('unit_price', !empty($item['unit_price']) ? (float) $item['unit_price'] : null);
 				$ci->__set('labor_time_minutes', !empty($item['labor_time_minutes']) ? (int) $item['labor_time_minutes'] : null);
-				$ci->__set('media_id', !empty($item['media_id']) ? (int) $item['media_id'] : null);
 				$itemId = $ci->save();
 				$savedItems[] = ['item_id' => $itemId];
 			}
@@ -1561,6 +1560,12 @@ class AppController extends Action {
 				return;
 			}
 
+			$nr_workorder = $_POST['nr_workorder'] ?? '';
+			if (empty($nr_workorder)) {
+				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+				return;
+			}
+
 			$uploadDir = dirname(__DIR__, 2) . '/public/uploads/media/';
 			if (!is_dir($uploadDir)) {
 				mkdir($uploadDir, 0755, true);
@@ -1583,6 +1588,7 @@ class AppController extends Action {
 
 					if (move_uploaded_file($photos['tmp_name'][$i], $targetPath)) {
 						$media = Container::getModel('ChecklistItemMedia');
+						$media->__set('nr_workorder', $nr_workorder);
 						$media->__set('media_type', 'photo');
 						$media->__set('file_path', '/uploads/media/' . $fileName);
 						$media->__set('original_name', $originalName);
@@ -1610,6 +1616,7 @@ class AppController extends Action {
 
 					if (move_uploaded_file($videos['tmp_name'][$i], $targetPath)) {
 						$media = Container::getModel('ChecklistItemMedia');
+						$media->__set('nr_workorder', $nr_workorder);
 						$media->__set('media_type', 'video');
 						$media->__set('file_path', '/uploads/media/' . $fileName);
 						$media->__set('original_name', $originalName);

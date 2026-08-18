@@ -7,6 +7,7 @@ use MF\Model\Model;
 class ChecklistItemMedia extends Model {
 
     protected ?int $media_id = null;
+    protected ?string $nr_workorder = null;
     protected ?string $media_type = null;
     protected ?string $file_path = null;
     protected ?string $original_name = null;
@@ -25,6 +26,7 @@ class ChecklistItemMedia extends Model {
     public function save() {
         $query = "INSERT INTO tb_checklist_item_media
         (
+            nr_workorder,
             media_type,
             file_path,
             original_name,
@@ -34,6 +36,7 @@ class ChecklistItemMedia extends Model {
         )
         VALUES
         (
+            :nr_workorder,
             :media_type,
             :file_path,
             :original_name,
@@ -43,6 +46,7 @@ class ChecklistItemMedia extends Model {
         )";
 
         $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':nr_workorder', $this->__get('nr_workorder'));
         $stmt->bindValue(':media_type', $this->__get('media_type'));
         $stmt->bindValue(':file_path', $this->__get('file_path'));
         $stmt->bindValue(':original_name', $this->__get('original_name') ?: null);
@@ -61,6 +65,14 @@ class ChecklistItemMedia extends Model {
         $stmt->execute();
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $result ?: null;
+    }
+
+    public function getByWorkorder() {
+        $query = "SELECT * FROM tb_checklist_item_media WHERE nr_workorder = :nr_workorder ORDER BY media_id ASC";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':nr_workorder', $this->__get('nr_workorder'));
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function deleteById() {
