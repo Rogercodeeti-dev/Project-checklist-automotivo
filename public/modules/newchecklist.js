@@ -50,9 +50,13 @@ $(document).ready(function() {
 
   // ===================== SALVAR ABA 2 VIA AJAX =====================
 
-  function saveStep2Data(callback) {
+  function saveStep2Data(callback, options) {
     $('#nr_workorder_step2').val($('#nr_workorder').val());
     var formData = $('#formChecklistStep2').serialize();
+    if (options) {
+      if (options.current_step !== undefined) formData += '&current_step=' + options.current_step;
+      if (options.id_status !== undefined) formData += '&id_status=' + options.id_status;
+    }
     $.ajax({
       url: '/save_checklist_vehicle',
       method: 'POST',
@@ -69,14 +73,32 @@ $(document).ready(function() {
 
   // ===================== SALVAR ABA 3 (MÍDIA) VIA AJAX =====================
 
-  function saveStep3Media(callback) {
+  function saveStep3Media(callback, options) {
     if (photos.length === 0 && videos.length === 0) {
+      if (options && (options.current_step !== undefined || options.id_status !== undefined)) {
+        var postData = { nr_workorder: $('#nr_workorder').val() };
+        if (options.current_step !== undefined) postData.current_step = options.current_step;
+        if (options.id_status !== undefined) postData.id_status = options.id_status;
+        $.ajax({
+          url: '/save_checklist_media',
+          method: 'POST',
+          data: postData,
+          dataType: 'json',
+          success: function(response) { if (typeof callback === 'function') callback(response); },
+          error: function() { if (typeof callback === 'function') callback({ success: false }); }
+        });
+        return;
+      }
       if (typeof callback === 'function') callback({ success: true, message: 'Nenhuma mídia para salvar' });
       return;
     }
 
     var formData = new FormData();
     formData.append('nr_workorder', $('#nr_workorder').val());
+    if (options) {
+      if (options.current_step !== undefined) formData.append('current_step', options.current_step);
+      if (options.id_status !== undefined) formData.append('id_status', options.id_status);
+    }
 
     var pendingUploads = photos.length + videos.length;
     var uploadStarted = false;
@@ -145,9 +167,13 @@ $(document).ready(function() {
 
   // ===================== SALVAR ABA 1 VIA AJAX =====================
 
-  function saveStep1Data(callback) {
+  function saveStep1Data(callback, options) {
     var formData = $('#formChecklistStep1').serialize();
-   
+    if (options) {
+      if (options.current_step !== undefined) formData += '&current_step=' + options.current_step;
+      if (options.id_status !== undefined) formData += '&id_status=' + options.id_status;
+    }
+
     $.ajax({
       url: '/save_checklist_attendance',
       method: 'POST',
@@ -1124,8 +1150,22 @@ $(document).ready(function() {
 
   // ===================== SALVAR ABA 4 (ITENS ORÇAMENTO) VIA AJAX =====================
 
-  function saveStep4Budget(callback) {
+  function saveStep4Budget(callback, options) {
     if (budgetItems.length === 0) {
+      if (options && (options.current_step !== undefined || options.id_status !== undefined)) {
+        var postData = { nr_workorder: $('#nr_workorder').val(), items: '[]' };
+        if (options.current_step !== undefined) postData.current_step = options.current_step;
+        if (options.id_status !== undefined) postData.id_status = options.id_status;
+        $.ajax({
+          url: '/save_checklist_items',
+          method: 'POST',
+          data: postData,
+          dataType: 'json',
+          success: function(response) { if (typeof callback === 'function') callback(response); },
+          error: function() { if (typeof callback === 'function') callback({ success: false }); }
+        });
+        return;
+      }
       if (typeof callback === 'function') callback({ success: true, message: 'Nenhum item de orçamento' });
       return;
     }
@@ -1139,13 +1179,19 @@ $(document).ready(function() {
       };
     });
 
+    var postData = {
+      nr_workorder: $('#nr_workorder').val(),
+      items: JSON.stringify(items)
+    };
+    if (options) {
+      if (options.current_step !== undefined) postData.current_step = options.current_step;
+      if (options.id_status !== undefined) postData.id_status = options.id_status;
+    }
+
     $.ajax({
       url: '/save_checklist_items',
       method: 'POST',
-      data: {
-        nr_workorder: $('#nr_workorder').val(),
-        items: JSON.stringify(items)
-      },
+      data: postData,
       dataType: 'json',
       success: function(response) {
         console.log('Itens do orçamento salvos:', response);
@@ -1211,11 +1257,105 @@ $(document).ready(function() {
     return new Blob([new Uint8Array(array)], { type: mime });
   }
 
-  // ===================== SALVAR CHECKLIST =====================
+  // ===================== SALVAR E SAIR =====================
+
+  function saveAndExit(stepNumber) {
+    if (!validateStep(stepNumber)) return;
+
+    var $btn = $('.btn-save-exit[data-step="' + stepNumber + '"]');
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Salvando...');
+
+    var currentStepValue = stepNumber;
+    if (stepNumber === 4) {
+      currentStepValue = budgetItems.length > 0 ? 4 : 3;
+    }
+
+    var options = { current_step: currentStepValue, id_status: 1 };
+
+    function redirectToMenu() {
+      $.ajax({
+        url: '/checklistprogress',
+        method: 'POST',
+        dataType: 'html'
+      }).done(function(data) {
+        $('#ajax-content').html(data);
+      }).fail(function() {
+        window.location.href = '/checklistprogress';
+      });
+    }
+
+    if (stepNumber === 1) {
+      saveStep1Data(function(response) {
+        $btn.prop('disabled', false).html('Salvar e Sair <i class="fa fa-sign-out"></i>');
+        if (response && response.success) {
+          toastr.success('Dados salvos com sucesso!');
+          setTimeout(redirectToMenu, 800);
+        } else {
+          toastr.error(response.message || 'Erro ao salvar.');
+        }
+      }, options);
+    } else if (stepNumber === 2) {
+      saveStep2Data(function(response) {
+        $btn.prop('disabled', false).html('Salvar e Sair <i class="fa fa-sign-out"></i>');
+        if (response && response.success) {
+          toastr.success('Dados do veículo salvos!');
+          setTimeout(redirectToMenu, 800);
+        } else {
+          toastr.error(response.message || 'Erro ao salvar.');
+        }
+      }, options);
+    } else if (stepNumber === 3) {
+      saveStep3Media(function(response) {
+        $btn.prop('disabled', false).html('Salvar e Sair <i class="fa fa-sign-out"></i>');
+        if (response && response.success) {
+          toastr.success('Mídias salvas com sucesso!');
+          setTimeout(redirectToMenu, 800);
+        } else {
+          toastr.error(response.message || 'Erro ao salvar.');
+        }
+      }, options);
+    } else if (stepNumber === 4) {
+      saveStep4Budget(function() {
+        saveStep4BudgetMedia(function(response) {
+          $btn.prop('disabled', false).html('Salvar e Sair <i class="fa fa-sign-out"></i>');
+          if (response && response.success) {
+            toastr.success('Orçamento salvo com sucesso!');
+            setTimeout(redirectToMenu, 800);
+          } else {
+            toastr.error(response.message || 'Erro ao salvar.');
+          }
+        }, options);
+      }, options);
+    }
+  }
+
+  $('.btn-save-exit').click(function() {
+    var stepNumber = $(this).data('step');
+    saveAndExit(stepNumber);
+  });
+
+  // ===================== FINALIZAR CHECKLIST =====================
 
   $('.btn-save-checklist').click(function() {
     var $btn = $(this);
+
+    // Validar se o orçamento foi preenchido
+    if (budgetItems.length === 0) {
+      showBudgetValidation(['Nenhum item de orçamento adicionado. Adicione ao menos um item antes de finalizar.']);
+      return;
+    }
+
+    // Validar se a mão de obra foi selecionada
+    if (!$('#id_laborforce').val()) {
+      var listHtml = '<li class="list-group-item"><i class="fa fa-times text-danger"></i> Tipo de Mão de Obra (aba Dados do Atendimento)</li>';
+      $('#validationList').html(listHtml);
+      $('#modalValidation').modal('show');
+      return;
+    }
+
     $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Salvando...');
+
+    var finalizeOptions = { current_step: 4, id_status: 2 };
 
     // Salvar etapa 1 → 2 → 3 mídia → 4 itens → 4 mídia → finalizar
     saveStep1Data(function() {
@@ -1225,15 +1365,26 @@ $(document).ready(function() {
             saveStep4BudgetMedia(function(response) {
               $btn.prop('disabled', false).html('<i class="fa fa-save"></i> Finalizar Checklist');
               if (response && response.success) {
-                toastr.success('Checklist finalizado com sucesso!');
+                toastr.success('Checklist finalizado com sucesso! Aguardando aprovação.');
+                setTimeout(function() {
+                  $.ajax({
+                    url: '/checklistfinished',
+                    method: 'POST',
+                    dataType: 'html'
+                  }).done(function(data) {
+                    $('#ajax-content').html(data);
+                  }).fail(function() {
+                    window.location.href = '/checklistfinished';
+                  });
+                }, 1500);
               } else {
                 toastr.error(response.message || 'Erro ao finalizar checklist.');
               }
-            });
-          });
-        });
-      });
-    });
+            }, finalizeOptions);
+          }, finalizeOptions);
+        }, finalizeOptions);
+      }, finalizeOptions);
+    }, finalizeOptions);
   });
 
   $(window).on('beforeunload', function() {

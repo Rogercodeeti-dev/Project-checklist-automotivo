@@ -1517,6 +1517,15 @@ class AppController extends Action {
 				return;
 			}
 
+			if (isset($_POST['id_status']) && $_POST['id_status'] !== '') {
+				$checklist->__set('id_status', (int)$_POST['id_status']);
+			}
+
+			if (isset($_POST['current_step']) && $_POST['current_step'] !== '') {
+				$checklist->__set('current_step', (int)$_POST['current_step']);
+				$checklist->update();
+			}
+
 			$itemsJson = $_POST['items'] ?? '[]';
 			$items = json_decode($itemsJson, true);
 

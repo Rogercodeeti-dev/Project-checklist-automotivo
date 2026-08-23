@@ -7,11 +7,14 @@ class Connection {
 	public static function getDb() {
 		try {
 
+			date_default_timezone_set('America/Sao_Paulo');
+
 			$conn = new \PDO(
 				"mysql:host=localhost;dbname=dbautomotivo;charset=utf8",
 				"root",
-				"" 
+				""
 			);
+			$conn->exec("SET time_zone = '-03:00'");
 			self::seedDefaultUser($conn);
 			return $conn;
 

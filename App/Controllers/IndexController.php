@@ -194,6 +194,10 @@ class IndexController extends Action {
 				$checklist->__set('id_status', (int)$_POST['id_status']);
 			}
 
+			if (isset($_POST['current_step']) && $_POST['current_step'] !== '') {
+				$checklist->__set('current_step', (int)$_POST['current_step']);
+			}
+
 			if (isset($_POST['nm_customer']) && $_POST['nm_customer'] !== '') {
 				$checklist->__set('nm_customer', trim($_POST['nm_customer']));
 			}
@@ -253,6 +257,14 @@ class IndexController extends Action {
 				return;
 			}
 
+			if (isset($_POST['id_status']) && $_POST['id_status'] !== '') {
+				$checklist->__set('id_status', (int)$_POST['id_status']);
+			}
+
+			if (isset($_POST['current_step']) && $_POST['current_step'] !== '') {
+				$checklist->__set('current_step', (int)$_POST['current_step']);
+			}
+
 			if (isset($_POST['nr_vehiclelicenseplate']) && $_POST['nr_vehiclelicenseplate'] !== '') {
 				$checklist->__set('nr_vehiclelicenseplate', trim($_POST['nr_vehiclelicenseplate']));
 			}
@@ -284,6 +296,8 @@ class IndexController extends Action {
 	}
 
 	public function checklistfinished() {
+		$checklist = Container::getModel('Checklist');
+		$this->view->checklists = $checklist->getFinishedChecklists();
 		$this->render('checklistfinished');
 	}
 
@@ -352,6 +366,15 @@ class IndexController extends Action {
 			if (!$existing) {
 				echo json_encode(['success' => false, 'message' => 'Checklist não encontrado. Salve primeiro os dados do atendimento.']);
 				return;
+			}
+
+			if (isset($_POST['id_status']) && $_POST['id_status'] !== '') {
+				$checklist->__set('id_status', (int)$_POST['id_status']);
+			}
+
+			if (isset($_POST['current_step']) && $_POST['current_step'] !== '') {
+				$checklist->__set('current_step', (int)$_POST['current_step']);
+				$checklist->update();
 			}
 
 			$uploadDir = dirname(__DIR__, 2) . '/public/uploads/media/';

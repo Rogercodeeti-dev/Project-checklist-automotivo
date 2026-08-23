@@ -1,16 +1,73 @@
   <div class="">
     <section class="content-header">
-      <h1>Checklists Finalizados</h1>
+      <h1><i class="fa fa-check-circle"></i> Checklists Finalizados</h1>
     </section>
 
     <section class="content">
-      <div class="box box-success">
-        <div class="box-header with-border">
-          <h3 class="box-title">Checklists Finalizados</h3>
-        </div>
-        <div class="box-body">
-          <p>Lista de checklists finalizados será implementada aqui.</p>
-        </div>
-      </div>
+      <div class="row"><div class="col-xs-12"><div class="box box-success"><div class="box-header with-border">
+        <h3 class="box-title">Checklists Finalizados</h3>
+      </div><div class="box-body">
+        <table id="tbchecklistfinished" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Nº OS</th>
+              <th>Cliente</th>
+              <th>Telefone</th>
+              <th>Placa</th>
+              <th>Veículo</th>
+              <th>Cor</th>
+              <th>Ano</th>
+              <th>Data Serviço</th>
+              <th>Atendente</th>
+              <th>Status</th>
+              <th>Finalizado em</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (!empty($this->view->checklists)) { ?>
+              <?php foreach ($this->view->checklists as $ck) { ?>
+              <tr>
+                <td><?= htmlspecialchars($ck['nr_workorder'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nm_customer'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_phone'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_vehiclelicenseplate'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['ds_vehicle'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['ds_color'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_year'] ?? '') ?></td>
+                <td><?= !empty($ck['dt_servicedate']) ? date('d/m/Y', strtotime($ck['dt_servicedate'])) : '' ?></td>
+                <td><?= htmlspecialchars($ck['nm_user_name'] ?? '') ?></td>
+                <td><span class="label label-warning"><?= htmlspecialchars($ck['ds_status'] ?? '') ?></span></td>
+                <td><?= !empty($ck['dt_finished_at']) ? date('d/m/Y H:i', strtotime($ck['dt_finished_at'])) : '' ?></td>
+              </tr>
+              <?php } ?>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
     </section>
   </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#tbchecklistfinished').DataTable({
+        "language": {
+          "lengthMenu": "Exibir _MENU_ registros por página",
+          "zeroRecords": "Nenhum checklist finalizado encontrado",
+          "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+          "infoFiltered": "(filtrado de _MAX_ registros no total)",
+          "search": "Buscar:",
+          "paginate": {
+            "first": "Primeiro",
+            "last": "Último",
+            "next": "Próximo",
+            "previous": "Anterior"
+          }
+        },
+        "order": [[ 10, "desc" ]],
+        "responsive": true
+      });
+    });
+  </script>

@@ -9,6 +9,7 @@ class Checklist extends Model {
     protected ?int $id = null;
     protected ?string $nr_workorder = null;
     protected ?int $id_status = null;
+    protected ?int $current_step = null;
     protected ?int $id_user = null;
     protected ?int $id_laborforce = null;
     protected ?string $dt_servicedate = null;
@@ -25,6 +26,7 @@ class Checklist extends Model {
     protected ?int $nr_year = null;
     protected ?int $nrKilometer = null;
     protected ?int $nr_fuellevel = null;
+    protected ?string $dt_finished_at = null;
 
     public function __get($atributo) {
         return $this->$atributo;
@@ -39,6 +41,7 @@ class Checklist extends Model {
         (
             nr_workorder,
             id_status,
+            current_step,
             id_user,
             id_laborforce,
             dt_servicedate,
@@ -58,6 +61,7 @@ class Checklist extends Model {
         (
             :nr_workorder,
             :id_status,
+            :current_step,
             :id_user,
             :id_laborforce,
             :dt_servicedate,
@@ -77,6 +81,7 @@ class Checklist extends Model {
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':nr_workorder', $this->__get('nr_workorder'));
         $stmt->bindValue(':id_status', $this->__get('id_status') ?? 1, \PDO::PARAM_INT);
+        $stmt->bindValue(':current_step', $this->__get('current_step') ?? 1, \PDO::PARAM_INT);
         $stmt->bindValue(':id_user', $this->__get('id_user'), \PDO::PARAM_INT);
         $stmt->bindValue(':id_laborforce', $this->__get('id_laborforce') ?: null, \PDO::PARAM_INT);
         $stmt->bindValue(':dt_servicedate', $this->__get('dt_servicedate') ?: null);
@@ -103,6 +108,7 @@ class Checklist extends Model {
         $fieldMap = [
             'nr_workorder' => 'nr_workorder',
             'id_status' => 'id_status',
+            'current_step' => 'current_step',
             'id_user' => 'id_user',
             'id_laborforce' => 'id_laborforce',
             'dt_servicedate' => 'dt_servicedate',
@@ -117,6 +123,7 @@ class Checklist extends Model {
             'nr_year' => 'nr_year',
             'nrKilometer' => 'nrKilometer',
             'nr_fuellevel' => 'nr_fuellevel',
+            'dt_finished_at' => 'dt_finished_at',
         ];
 
         foreach ($fieldMap as $prop => $col) {
@@ -125,6 +132,12 @@ class Checklist extends Model {
                 $fields[] = "$col = :$col";
                 $params[$col] = $val;
             }
+        }
+
+        // Preencher dt_finished_at automaticamente ao finalizar (status 2)
+        if (isset($params['id_status']) && $params['id_status'] == 2 && !isset($params['dt_finished_at'])) {
+            $fields[] = "dt_finished_at = :dt_finished_at";
+            $params['dt_finished_at'] = date('Y-m-d H:i:s');
         }
 
         if (empty($fields)) {
@@ -164,6 +177,22 @@ class Checklist extends Model {
                   FROM tb_checklist c
                   LEFT JOIN tb_user u ON u.id = c.id_user
                   ORDER BY c.dt_created DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getFinishedChecklists() {
+        $query = "SELECT c.nr_workorder, c.nm_customer, c.nr_phone, c.ds_email,
+                         c.nr_vehiclelicenseplate, c.ds_vehicle, c.ds_color, c.nr_year,
+                         c.dt_servicedate, c.dt_finished_at,
+                         u.nm_name AS nm_user_name,
+                         s.ds_status
+                  FROM tb_checklist c
+                  LEFT JOIN tb_user u ON u.id = c.id_user
+                  LEFT JOIN tb_status s ON s.id_status = c.id_status
+                  WHERE c.id_status = 2
+                  ORDER BY c.dt_finished_at DESC";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
