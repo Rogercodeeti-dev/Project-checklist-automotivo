@@ -55,7 +55,8 @@ class Checklist extends Model {
             ds_color,
             nr_year,
             nrKilometer,
-            nr_fuellevel
+            nr_fuellevel,
+            dt_finished_at
         )
         VALUES
         (
@@ -75,7 +76,8 @@ class Checklist extends Model {
             :ds_color,
             :nr_year,
             :nrKilometer,
-            :nr_fuellevel
+            :nr_fuellevel,
+            :dt_finished_at
         )";
 
         $stmt = $this->db->prepare($query);
@@ -83,7 +85,7 @@ class Checklist extends Model {
         $stmt->bindValue(':id_status', $this->__get('id_status') ?? 1, \PDO::PARAM_INT);
         $stmt->bindValue(':current_step', $this->__get('current_step') ?? 1, \PDO::PARAM_INT);
         $stmt->bindValue(':id_user', $this->__get('id_user'), \PDO::PARAM_INT);
-        $stmt->bindValue(':id_laborforce', $this->__get('id_laborforce') ?: null, \PDO::PARAM_INT);
+        $stmt->bindValue(':id_laborforce', $this->__get('id_laborforce') ?: null);
         $stmt->bindValue(':dt_servicedate', $this->__get('dt_servicedate') ?: null);
         $stmt->bindValue(':hr_servicehours', $this->__get('hr_servicehours') ?: null);
         $stmt->bindValue(':nm_customer', $this->__get('nm_customer') ?: null);
@@ -93,13 +95,16 @@ class Checklist extends Model {
         $stmt->bindValue(':nr_vehiclelicenseplate', $this->__get('nr_vehiclelicenseplate') ?: null);
         $stmt->bindValue(':ds_vehicle', $this->__get('ds_vehicle') ?: null);
         $stmt->bindValue(':ds_color', $this->__get('ds_color') ?: null);
-        $stmt->bindValue(':nr_year', $this->__get('nr_year') ?: null, \PDO::PARAM_INT);
-        $stmt->bindValue(':nrKilometer', $this->__get('nrKilometer') ?: null, \PDO::PARAM_INT);
-        $stmt->bindValue(':nr_fuellevel', $this->__get('nr_fuellevel') ?: null, \PDO::PARAM_INT);
+        $stmt->bindValue(':nr_year', $this->__get('nr_year') ?: null);
+        $stmt->bindValue(':nrKilometer', $this->__get('nrKilometer') ?: null);
+        $stmt->bindValue(':nr_fuellevel', $this->__get('nr_fuellevel') ?: null);
+        $stmt->bindValue(':dt_finished_at', $this->__get('dt_finished_at') ?: null);
+
         $stmt->execute();
-        $this->id = $this->db->lastInsertId();
-        return $this->id;
+        return $stmt->rowCount() > 0;
     }
+    
+
 
     public function update() {
         $fields = [];

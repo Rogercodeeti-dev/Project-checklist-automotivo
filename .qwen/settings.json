@@ -4,7 +4,13 @@
       "Agent(Explore)",
       "Read(//c/projetos/appchecklist-car/App/Controllers/**)",
       "Read(//c/projetos/appchecklist-car/**)",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(tasklist)",
+      "Bash(findstr *)",
+      "Bash(curl *)",
+      "Bash(\"c:\\xampp\\mysql\\bin\\mysql.exe\" *)",
+      "Bash(type *)",
+      "Bash(\"c:\\program files\\mysql\\mysql server 8.0\\bin\\mysql.exe\" *)"
     ]
   },
   "$version": 4

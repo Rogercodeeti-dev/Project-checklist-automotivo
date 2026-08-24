@@ -1,0 +1,39 @@
+2026-08-24 01:20:52 | METHOD CALLED | POST={"nr_workorder":"teste123"}
+2026-08-23 22:20:52 | existing=NO (save path)
+2026-08-23 22:20:52 | SAVE called | nr_workorder=teste123 | id_user=N/A
+2026-08-23 22:20:52 | SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'id_laborforce' cannot be null | File: C:\projetos\Project-checklist-automotivo\App\Models\Checklist.php | Line: 103
+2026-08-24 01:25:32 | METHOD CALLED | POST={"nr_workorder":"TESTE001","id_status":"1","current_step":"1","nm_customer":"Teste","nr_phone":"11999999999"}
+2026-08-23 22:25:32 | existing=NO (save path)
+2026-08-23 22:25:32 | SAVE called | nr_workorder=TESTE001 | id_user=N/A
+2026-08-24 01:26:06 | METHOD CALLED | POST={"nr_workorder":"TESTE002","id_status":"1","current_step":"1","nm_customer":"Teste","nr_phone":"11999999999"}
+2026-08-23 22:26:06 | existing=NO (save path)
+2026-08-23 22:26:06 | SAVE called | nr_workorder=TESTE002 | id_user=N/A
+2026-08-23 22:26:06 | SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '11999999999' for key 'tb_checklist.nr_phone' | File: C:\projetos\Project-checklist-automotivo\App\Models\Checklist.php | Line: 103
+2026-08-24 01:26:14 | METHOD CALLED | POST={"nr_workorder":"TESTE003","id_status":"1","current_step":"1","nm_customer":"Teste3","nr_phone":"11988888888"}
+2026-08-23 22:26:14 | existing=NO (save path)
+2026-08-23 22:26:14 | SAVE called | nr_workorder=TESTE003 | id_user=N/A
+2026-08-24 01:27:18 | METHOD CALLED | POST={"nr_workorder":"TESTEFINAL","id_status":"1","current_step":"1","nm_customer":"Cliente Teste","nr_phone":"11977776666","ds_email":"teste@teste.com"}
+2026-08-23 22:27:18 | existing=NO (save path)
+2026-08-23 22:27:18 | SAVE called | nr_workorder=TESTEFINAL | id_user=N/A
+2026-08-24 01:27:28 | METHOD CALLED | POST={"nr_workorder":"TESTEFINAL","id_status":"1","current_step":"2","nm_customer":"Cliente Teste Atualizado","nr_phone":"11977776666"}
+2026-08-23 22:27:28 | existing=YES (update path)
+2026-08-24 01:29:35 | METHOD CALLED | POST={"nr_workorder":"230820262229","id_status":"1","dt_servicedate":"2026-08-23","hr_servicehours":"22:29","nm_attendant":"admin","nm_customer":"Rogerio","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"aaaa"}
+2026-08-23 22:29:35 | existing=NO (save path)
+2026-08-23 22:29:35 | SAVE called | nr_workorder=230820262229 | id_user=1
+2026-08-24 01:30:09 | METHOD CALLED | POST={"nr_workorder":"230820262229","id_status":"2","dt_servicedate":"2026-08-23","hr_servicehours":"22:29","nm_attendant":"admin","nm_customer":"Rogerio","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"aaaa","current_step":"4"}
+2026-08-23 22:30:09 | existing=YES (update path)
+2026-08-24 01:31:32 | METHOD CALLED | POST={"nr_workorder":"230820262231","id_status":"1","dt_servicedate":"2026-08-23","hr_servicehours":"22:31","nm_attendant":"admin","nm_customer":"Cliente teste","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"ddd"}
+2026-08-23 22:31:32 | existing=NO (save path)
+2026-08-23 22:31:32 | SAVE called | nr_workorder=230820262231 | id_user=1
+2026-08-24 01:32:12 | METHOD CALLED | POST={"nr_workorder":"230820262231","id_status":"2","dt_servicedate":"2026-08-23","hr_servicehours":"22:31","nm_attendant":"admin","nm_customer":"Cliente teste","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"ddd","current_step":"4"}
+2026-08-23 22:32:12 | existing=YES (update path)
+2026-08-24 01:32:39 | METHOD CALLED | POST={"nr_workorder":"230820262232","id_status":"1","dt_servicedate":"2026-08-23","hr_servicehours":"22:32","nm_attendant":"admin","nm_customer":"Rogerio","nr_phone":"","id_laborforce":"4","ds_email":"","ds_testimonialcustomer":"aaaa"}
+2026-08-23 22:32:39 | existing=NO (save path)
+2026-08-23 22:32:39 | SAVE called | nr_workorder=230820262232 | id_user=1
+2026-08-24 01:33:16 | METHOD CALLED | POST={"nr_workorder":"230820262232","id_status":"2","dt_servicedate":"2026-08-23","hr_servicehours":"22:32","nm_attendant":"admin","nm_customer":"Rogerio","nr_phone":"","id_laborforce":"4","ds_email":"","ds_testimonialcustomer":"aaaa","current_step":"4"}
+2026-08-23 22:33:16 | existing=YES (update path)
+2026-08-24 01:33:44 | METHOD CALLED | POST={"nr_workorder":"230820262233","id_status":"1","dt_servicedate":"2026-08-23","hr_servicehours":"22:33","nm_attendant":"admin","nm_customer":"Rosane","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"aaaa"}
+2026-08-23 22:33:44 | existing=NO (save path)
+2026-08-23 22:33:44 | SAVE called | nr_workorder=230820262233 | id_user=1
+2026-08-24 01:34:34 | METHOD CALLED | POST={"nr_workorder":"230820262233","id_status":"2","dt_servicedate":"2026-08-23","hr_servicehours":"22:33","nm_attendant":"admin","nm_customer":"Rosane","nr_phone":"","id_laborforce":"1","ds_email":"","ds_testimonialcustomer":"aaaa","current_step":"4"}
+2026-08-23 22:34:34 | existing=YES (update path)

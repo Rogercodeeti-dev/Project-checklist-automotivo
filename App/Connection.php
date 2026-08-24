@@ -12,9 +12,10 @@ class Connection {
 			$conn = new \PDO(
 				"mysql:host=localhost;dbname=dbautomotivo;charset=utf8",
 				"root",
-				""
+				"db#d20m0768"
 			);
 			$conn->exec("SET time_zone = '-03:00'");
+           
 			self::seedDefaultUser($conn);
 			return $conn;
 
@@ -24,6 +25,7 @@ class Connection {
 		}
 		
 	}
+
 
 	public static function seedDefaultUser($db){
 

@@ -166,9 +166,11 @@ class IndexController extends Action {
 	public function saveChecklistAttendance() {
 		session_start();
 		header('Content-Type: application/json');
-		// ini_set('display_errors', 1);
-		// ini_set('display_startup_errors', 1);
-		// error_reporting(E_ALL);
+		ini_set('display_errors', 0);
+		ini_set('log_errors', 1);
+		error_reporting(E_ALL);
+
+		file_put_contents(__DIR__ . '/../../tmp_checklist_error.log', date('Y-m-d H:i:s') . ' | METHOD CALLED | POST=' . json_encode($_POST) . PHP_EOL, FILE_APPEND);
 
 		try {
 			if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -177,7 +179,6 @@ class IndexController extends Action {
 			}
 
 			$nr_workorder = $_POST['nr_workorder'] ?? '';
-			var_dump($_POST['nr_workorder']); // Debugging line
 			if (empty($nr_workorder)) {
 				echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
 				return;
@@ -187,6 +188,7 @@ class IndexController extends Action {
 			$checklist->__set('nr_workorder', $nr_workorder);
 
 			$existing = $checklist->getByWorkorder();
+			file_put_contents(__DIR__ . '/../../tmp_checklist_error.log', date('Y-m-d H:i:s') . ' | existing=' . ($existing ? 'YES (update path)' : 'NO (save path)') . PHP_EOL, FILE_APPEND);
 
 			$checklist->__set('id_user', $_SESSION['id'] ?? 1);
 
@@ -222,12 +224,22 @@ class IndexController extends Action {
 
 			if ($existing) {
 				$result = $checklist->update();
-				echo json_encode(['success' => true, 'message' => 'Dados atualizados com sucesso', 'id' => $existing['item_id'], 'nr_workorder' => $nr_workorder]);
+				if (!$result) {
+					echo json_encode(['success' => false, 'message' => 'Erro ao atualizar checklist']);
+					return;
+				}
+				echo json_encode(['success' => true, 'message' => 'Dados atualizados com sucesso', 'nr_workorder' => $nr_workorder]);
 			} else {
-				$id = $checklist->save();
-				echo json_encode(['success' => true, 'message' => 'Dados salvos com sucesso', 'id' => $id, 'nr_workorder' => $nr_workorder]);
+				file_put_contents(__DIR__ . '/../../tmp_checklist_error.log', date('Y-m-d H:i:s') . ' | SAVE called | nr_workorder=' . $nr_workorder . ' | id_user=' . ($_SESSION['id'] ?? 'N/A') . PHP_EOL, FILE_APPEND);
+				$saved = $checklist->save();
+				if (!$saved) {
+					echo json_encode(['success' => false, 'message' => 'Erro ao salvar checklist']);
+					return;
+				}
+				echo json_encode(['success' => true, 'message' => 'Dados salvos com sucesso', 'nr_workorder' => $nr_workorder]);
 			}
 		} catch (\Exception $e) {
+			file_put_contents(__DIR__ . '/../../tmp_checklist_error.log', date('Y-m-d H:i:s') . ' | ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine() . PHP_EOL, FILE_APPEND);
 			echo json_encode(['success' => false, 'message' => 'Erro ao salvar: ' . $e->getMessage()]);
 		}
 	}
