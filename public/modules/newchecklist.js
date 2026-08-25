@@ -643,7 +643,7 @@ $(document).ready(function() {
     if (currentStep === 2 && targetStep !== 2) {
       saveStep2Data(function() {
         proceedToStep(currentStep, targetStep);
-      });
+      }, { current_step: 2 });
       return;
     }
 
@@ -651,7 +651,7 @@ $(document).ready(function() {
     if (currentStep === 3 && targetStep !== 3) {
       saveStep3Media(function() {
         proceedToStep(currentStep, targetStep);
-      });
+      }, { current_step: 3 });
       return;
     }
 
@@ -660,8 +660,8 @@ $(document).ready(function() {
       saveStep4Budget(function() {
         saveStep4BudgetMedia(function() {
           proceedToStep(currentStep, targetStep);
-        });
-      });
+        }, { current_step: 4 });
+      }, { current_step: 4 });
       return;
     }
 
