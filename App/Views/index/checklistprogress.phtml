@@ -1,16 +1,98 @@
   <div class="">
     <section class="content-header">
-      <h1>Checklists Em Andamento</h1>
+      <h1><i class="fa fa-spinner"></i> Checklists Em Andamento</h1>
     </section>
 
     <section class="content">
-      <div class="box box-warning">
-        <div class="box-header with-border">
-          <h3 class="box-title">Checklists Em Andamento</h3>
-        </div>
-        <div class="box-body">
-          <p>Lista de checklists em andamento será implementada aqui.</p>
-        </div>
-      </div>
+      <div class="row"><div class="col-xs-12"><div class="box box-warning"><div class="box-header with-border">
+        <h3 class="box-title">Checklists Em Andamento</h3>
+      </div><div class="box-body">
+        <table id="tbchecklistprogress" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Nº OS</th>
+              <th>Cliente</th>
+              <th>Telefone</th>
+              <th>Placa</th>
+              <th>Veículo</th>
+              <th>Cor</th>
+              <th>Ano</th>
+              <th>Data Serviço</th>
+              <th>Atendente</th>
+              <th>Etapa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (!empty($this->view->checklists)) { ?>
+              <?php foreach ($this->view->checklists as $ck) { ?>
+              <tr class="clickable-row" data-nr-workorder="<?= htmlspecialchars($ck['nr_workorder'] ?? '') ?>" style="cursor:pointer;">
+                <td><?= htmlspecialchars($ck['nr_workorder'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nm_customer'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_phone'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_vehiclelicenseplate'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['ds_vehicle'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['ds_color'] ?? '') ?></td>
+                <td><?= htmlspecialchars($ck['nr_year'] ?? '') ?></td>
+                <td><?= !empty($ck['dt_servicedate']) ? date('d/m/Y', strtotime($ck['dt_servicedate'])) : '' ?></td>
+                <td><?= htmlspecialchars($ck['nm_user_name'] ?? '') ?></td>
+                <td>
+                  <?php
+                    $step = (int)($ck['current_step'] ?? 1);
+                    $stepLabels = [
+                      1 => ['label-info', '1 - Atendimento'],
+                      2 => ['label-primary', '2 - Veículo'],
+                      3 => ['label-warning', '3 - Registro Visual'],
+                      4 => ['label-success', '4 - Orçamento']
+                    ];
+                    $badge = $stepLabels[$step] ?? $stepLabels[1];
+                  ?>
+                  <span class="label <?= $badge[0] ?>"><?= $badge[1] ?></span>
+                </td>
+              </tr>
+              <?php } ?>
+            <?php } ?>
+          </tbody>
+        </table>
+      </div></div></div></div>
     </section>
   </div>
+
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      var table = $('#tbchecklistprogress').DataTable({
+        "language": {
+          "lengthMenu": "Exibir _MENU_ registros por página",
+          "zeroRecords": "Nenhum checklist em andamento encontrado",
+          "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+          "infoFiltered": "(filtrado de _MAX_ registros no total)",
+          "search": "Buscar:",
+          "paginate": {
+            "first": "Primeiro",
+            "last": "Último",
+            "next": "Próximo",
+            "previous": "Anterior"
+          }
+        },
+        "order": [[ 7, "desc" ]],
+        "responsive": true
+      });
+
+      $('#tbchecklistprogress tbody').on('click', 'tr.clickable-row', function() {
+        var nrWorkorder = $(this).data('nr-workorder');
+        if (nrWorkorder) {
+          $.ajax({
+            url: '/newchecklist?nr_workorder=' + encodeURIComponent(nrWorkorder),
+            method: 'POST',
+            dataType: 'html'
+          }).done(function(data) {
+            $('#ajax-content').html(data);
+          }).fail(function() {
+            window.location.href = '/newchecklist?nr_workorder=' + encodeURIComponent(nrWorkorder);
+          });
+        }
+      });
+    });
+  </script>

@@ -1260,7 +1260,7 @@ $(document).ready(function() {
   // ===================== SALVAR E SAIR =====================
 
   function saveAndExit(stepNumber) {
-    if (!validateStep(stepNumber)) return;
+    if (stepNumber !== 4 && !validateStep(stepNumber)) return;
 
     var $btn = $('.btn-save-exit[data-step="' + stepNumber + '"]');
     $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Salvando...');
@@ -1386,6 +1386,76 @@ $(document).ready(function() {
       }, finalizeOptions);
     }, finalizeOptions);
   });
+
+  window.loadExistingChecklist = function(nrWorkorder) {
+    $.ajax({
+      url: '/get_checklist_data?nr_workorder=' + encodeURIComponent(nrWorkorder),
+      method: 'GET',
+      dataType: 'json'
+    }).done(function(response) {
+      if (!response.success || !response.data) {
+        toastr.error(response.message || 'Erro ao carregar checklist.');
+        return;
+      }
+
+      var d = response.data;
+
+      // Etapa 1 - Atendimento
+      $('#nr_workorder').val(d.nr_workorder || '').prop('readonly', true);
+      $('#nr_workorder_step2').val(d.nr_workorder || '');
+      if (d.dt_servicedate) {
+        $('#dt_service').val(d.dt_servicedate);
+      }
+      if (d.hr_servicehours) {
+        $('#hr_service').val(d.hr_servicehours);
+      }
+      if (d.nm_customer) {
+        $('#formChecklistStep1 [name="nm_customer"]').val(d.nm_customer);
+      }
+      if (d.nr_phone) {
+        $('#formChecklistStep1 [name="nr_phone"]').val(d.nr_phone);
+      }
+      if (d.ds_email) {
+        $('#formChecklistStep1 [name="ds_email"]').val(d.ds_email);
+      }
+      if (d.ds_testimonialcustomer) {
+        $('#formChecklistStep1 [name="ds_testimonialcustomer"]').val(d.ds_testimonialcustomer);
+      }
+      if (d.id_laborforce) {
+        $('#id_laborforce').val(d.id_laborforce);
+      }
+
+      // Etapa 2 - Veículo
+      if (d.nr_vehiclelicenseplate) {
+        $('#formChecklistStep2 [name="nr_vehiclelicenseplate"]').val(d.nr_vehiclelicenseplate);
+      }
+      if (d.ds_vehicle) {
+        $('#formChecklistStep2 [name="ds_vehicle"]').val(d.ds_vehicle);
+      }
+      if (d.ds_color) {
+        $('#formChecklistStep2 [name="ds_color"]').val(d.ds_color);
+      }
+      if (d.nr_year) {
+        $('#formChecklistStep2 [name="nr_year"]').val(d.nr_year);
+      }
+      if (d.nrKilometer) {
+        $('#formChecklistStep2 [name="nrKilometer"]').val(d.nrKilometer);
+      }
+      if (d.nr_fuellevel) {
+        $('#fuelSlider').val(d.nr_fuellevel);
+        $('#fuelPercentage').text(d.nr_fuellevel + '%');
+        $('#fuelGaugeFill').css('width', d.nr_fuellevel + '%');
+      }
+
+      // Navegar para a etapa atual
+      var targetStep = parseInt(d.current_step) || 1;
+      switchToStep(targetStep);
+
+      toastr.success('Checklist ' + nrWorkorder + ' carregado com sucesso.');
+    }).fail(function() {
+      toastr.error('Erro ao buscar dados do checklist.');
+    });
+  };
 
   $(window).on('beforeunload', function() {
     stopAllCameras();

@@ -1117,3 +1117,10 @@
   </style>
 
   <script src="/modules/newchecklist.js"></script>
+  <?php if (!empty($this->view->nr_workorder)) { ?>
+  <script>
+    $(document).ready(function() {
+      loadExistingChecklist('<?= htmlspecialchars($this->view->nr_workorder) ?>');
+    });
+  </script>
+  <?php } ?>

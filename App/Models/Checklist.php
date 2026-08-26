@@ -202,4 +202,20 @@ class Checklist extends Model {
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getInProgressChecklists() {
+        $query = "SELECT c.nr_workorder, c.nm_customer, c.nr_phone, c.ds_email,
+                         c.nr_vehiclelicenseplate, c.ds_vehicle, c.ds_color, c.nr_year,
+                         c.dt_servicedate, c.current_step,
+                         u.nm_name AS nm_user_name,
+                         s.ds_status
+                  FROM tb_checklist c
+                  LEFT JOIN tb_user u ON u.id = c.id_user
+                  LEFT JOIN tb_status s ON s.id_status = c.id_status
+                  WHERE c.id_status = 1
+                  ORDER BY c.dt_servicedate DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

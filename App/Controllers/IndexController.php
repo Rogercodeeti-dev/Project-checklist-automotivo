@@ -160,6 +160,7 @@ class IndexController extends Action {
 
 	public function newchecklist() {
 		session_start();
+		$this->view->nr_workorder = $_GET['nr_workorder'] ?? null;
 		$this->render('newchecklist');
 	}
 
@@ -304,6 +305,8 @@ class IndexController extends Action {
 	}
 
 	public function checklistprogress() {
+		$checklist = Container::getModel('Checklist');
+		$this->view->checklists = $checklist->getInProgressChecklists();
 		$this->render('checklistprogress');
 	}
 
@@ -311,6 +314,26 @@ class IndexController extends Action {
 		$checklist = Container::getModel('Checklist');
 		$this->view->checklists = $checklist->getFinishedChecklists();
 		$this->render('checklistfinished');
+	}
+
+	public function getChecklistData() {
+		header('Content-Type: application/json');
+		$nr_workorder = $_GET['nr_workorder'] ?? '';
+		if (empty($nr_workorder)) {
+			echo json_encode(['success' => false, 'message' => 'nr_workorder é obrigatório']);
+			return;
+		}
+
+		$checklist = Container::getModel('Checklist');
+		$checklist->__set('nr_workorder', $nr_workorder);
+		$data = $checklist->getByWorkorder();
+
+		if (!$data) {
+			echo json_encode(['success' => false, 'message' => 'Checklist não encontrado']);
+			return;
+		}
+
+		echo json_encode(['success' => true, 'data' => $data]);
 	}
 
 	//Update module

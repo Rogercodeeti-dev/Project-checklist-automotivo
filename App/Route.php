@@ -83,6 +83,12 @@ class Route extends Bootstrap {
 			'action' => 'checklistfinished'
 		);
 
+		$routes['get_checklist_data'] = array(
+			'route' => '/get_checklist_data',
+			'controller' => 'IndexController',
+			'action' => 'getChecklistData'
+		);
+
 		//Listagem de usuários
 		$routes['listuser'] = array(
 			'route' => '/listuser',
